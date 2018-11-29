@@ -1,0 +1,25 @@
+#index {
+    /* background-color: #DADADA; */
+    background-image: url('img/hero.jpg')
+}
+body > .grid {
+    height: 100%;
+}
+.image {
+    margin-top: -100px;
+}
+.column {
+    max-width: 450px;
+}
+
+.alert{
+    height:50px;
+    width:200px;
+    position:absolute;
+    top:0;
+}
+
+.danger{
+    color:red;
+    border:2px solid red;
+}
