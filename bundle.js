@@ -13,7 +13,7 @@ const paths = {
 if(paths[path]){paths[path]()}
 
 // else {console.error(`no path written for ${path}`)}
-},{"./src/login":30,"./src/snacks":32}],2:[function(require,module,exports){
+},{"./src/login":30,"./src/snacks":33}],2:[function(require,module,exports){
 module.exports = require('./lib/axios');
 },{"./lib/axios":4}],3:[function(require,module,exports){
 (function (process){
@@ -1681,7 +1681,46 @@ function tryLogin(e, email, password){
 module.exports = {init}
 },{"./alert":29,"axios":2}],31:[function(require,module,exports){
 const axios = require('axios')
+
+function addListenerToMany(eleArr, fn){
+    eleArr.forEach(ele => ele.addEventListener('click', fn))
+}
+
+function init(){
+    const edit = document.querySelectorAll('.edit')
+    const trash = document.querySelectorAll('.trash')
+    addListenerToMany(edit, function(e){editReview(e)})
+    addListenerToMany(trash, function (e) { delReview(e) })
+}
+
+function delReview(e){
+    console.log(e.target.parentElement)
+    e.target.parentElement.innerHTML += confirmHTML()
+    addButtonListeners()
+}
+
+function confirmHTML(){
+    return `
+    <div class="confirmBox" >
+        Are you sure about that?
+        <div class="ui black deny button">cancel</div>
+        <div class="ui negative button">delete</div>
+    </div >`
+}
+
+function addButtonListeners(){
+    document.querySelector('.deny').addEventListener('click', minimize)
+}
+
+function minimize(){
+    document.querySelector('')
+}
+
+module.exports = {init}
+},{"axios":2}],32:[function(require,module,exports){
+const axios = require('axios')
 const baseURL = 'http://localhost:3000'
+const reviewCrud = require('./review-crud')
 
 function init(){
     const cards = document.querySelectorAll('.card')
@@ -1693,42 +1732,58 @@ function init(){
 function modal(e){
     e.stopPropagation()
     const id = e.currentTarget.getAttribute('data-id')
-    console.log(id)
     return axios.get(baseURL+`/api/snacks/${id}`)
     .then(result => {
-        console.log(result)
         document.querySelector('body').innerHTML += modalHTML(result.data[0])
         $('.ui.modal')
             .modal('show')
             ;
+        document.querySelector('.close').addEventListener('click', remove)
+        getReviews(id)
     })
-
 }
 
+function remove(e){
+    const modal = document.querySelector('.modal')
+    setTimeout(
+        function(){
+            modal.remove()
+            init()
+        },
+        250
+    )
+}
 
 function modalHTML(card){
-    console.log(card)
    return  `
-   <div class="ui modal" >
+   <div class="ui modal" data-id="${card.id}" >
         <i class="close icon"></i>
-        <div class="image content">
-            <div class="ui medium image">
-                <img src="${card.img}" alt="Image of ${card.name}">
-            </div>
-            <div class="description">
-                <div class="ui header">${card.name}</div>
-                <p>${card.description}</p>
-                
-                <div class="ui vertical animated button" tabindex="0">
-                    <div class="visible content">$${card.price}</div>
-                    <div class="hidden content">
-                        <i class="shop icon"></i>
-                    </div>
+        <div class="header">${card.name}</div>
+        <div class="container">
+        <main>
+            <div class="image content">
+                <div class="ui medium image">
+                    <img src="${card.img}" alt="Image of ${card.name}">
                 </div>
+                <div class="description">
+                    <p>${card.description}</p>
+                    
+                    <div class="ui vertical animated button" tabindex="0">
+                        <div class="visible content">$${card.price}</div>
+                        <div class="hidden content">
+                            <i class="shop icon"></i>
+                        </div>
+                    </div>
 
+                </div>
             </div>
-        </div>
-
+        </main>
+        <aside>
+        <h3>Comments</h3>
+        <div class="commentsContainer">Be the first to review ${card.name}!</div>
+        </aside>
+    </div>
+        
             <div class="actions">
                 <div class="ui positive right labeled icon button">
                     add a review
@@ -1737,8 +1792,43 @@ function modalHTML(card){
             </div>
         </div>`
 }
+
+function getReviews(id){
+    return axios.get(baseURL + `/api/snacks/${id}/reviews`)
+    .then(result => {
+        const reviewArray = []
+        result.data.forEach(review => reviewArray.push(reviewHTML(review)))
+        document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
+        return reviewCrud.init()
+    })
+}
+
+function customizeReview(review){
+    let deleteEdit = ''
+    const userId = document.querySelector('body').getAttribute('data-id')    
+    if (review.user_id == userId) deleteEdit = '<i class="edit icon"></i> <i class="trash alternate icon"></i>'
+    let img = review.img
+    if (!review.img) img = `<p>${review.first_name[0]}</p>`
+    return {deleteEdit, img}
+}
+
+function reviewHTML(review){ 
+    const {deleteEdit, img} = customizeReview(review) 
+    return `
+    <div class="review">
+        <div class="profPic">${img}</div>
+
+        <div class="reviewContent">
+            <h3>${review.title}</h3>
+            <p>${review.rating}</p>
+            <p>${review.text}</p>
+            ${deleteEdit}
+        </div>
+    </div>`
+}
+
 module.exports = {init}
-},{"axios":2}],32:[function(require,module,exports){
+},{"./review-crud":31,"axios":2}],33:[function(require,module,exports){
 const axios = require('axios') 
 const baseURL = 'http://localhost:3000'
 const reviews = require('./reviews')
@@ -1749,7 +1839,7 @@ function init(){
     
     else axios.get(baseURL+'/auth/token', {
         headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`
         }
     })
     .then(response => {
@@ -1843,4 +1933,4 @@ return `
 
 
 module.exports = {init}
-},{"./reviews":31,"axios":2}]},{},[1]);
+},{"./reviews":32,"axios":2}]},{},[1]);

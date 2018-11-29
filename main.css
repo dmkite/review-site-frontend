@@ -76,3 +76,91 @@ nav p:hover{
 .modal{
     z-index:9999;
 }
+
+.container{
+    display:flex;
+    flex-wrap:none;
+}
+
+.ui main{
+    width:60%;
+
+}
+
+.ui aside{
+    width:40%;
+    padding:10px;
+}
+
+.modal img{
+    margin-top:100px;
+}
+
+#snacks .description div, #snacks .description p{
+    padding-left:10px;
+}
+.review{
+    outline:1px solid blue;
+    display:flex;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+}
+
+.profPic{
+    outline:1px dotted red;
+    height:30px;
+    width:30px;
+    border-radius:50%;
+    background-color: #00C4B4;
+
+}
+.profPic p{
+    text-align:center;
+    font-size:24px;
+    line-height:30px;
+    color:white;
+    opacity:.9;
+}
+.reviewContent{
+    outline:1px dashed green;
+    padding-left:10px;
+    width:calc(100% - 30px);
+    
+}
+.reviewContent h3{
+    height:30px;
+    outline:1px solid purple;
+    line-height: 30px;
+}
+
+/* olive = # A9D92C*/
+
+.trash:hover, .edit:hover{
+    cursor:pointer;
+    transform:scale(1.1);
+    color:#00CA52;
+}
+
+.trash:hover{
+    color:salmon;
+}
+
+aside{
+    background-color:#efefef;
+}
+
+.confirmBox{
+    animation: grow .25s ease-in;
+}
+@keyframes grow{
+    0%{transform:scale(0)}
+    100%{transform:scale(1)}
+}
+
+@keyframes shrink{
+    0%{transform:scale(1)}
+    100%{transform:scale(0)}
+}
+.confirmBox .button{
+    display: inline-block;
+}

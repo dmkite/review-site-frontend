@@ -8,7 +8,7 @@ function init(){
     
     else axios.get(baseURL+'/auth/token', {
         headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`
         }
     })
     .then(response => {
