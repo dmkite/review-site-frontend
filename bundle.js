@@ -13,7 +13,7 @@ const paths = {
 if(paths[path]){paths[path]()}
 
 // else {console.error(`no path written for ${path}`)}
-},{"./src/login":30,"./src/snacks":31}],2:[function(require,module,exports){
+},{"./src/login":30,"./src/snacks":32}],2:[function(require,module,exports){
 module.exports = require('./lib/axios');
 },{"./lib/axios":4}],3:[function(require,module,exports){
 (function (process){
@@ -1680,8 +1680,68 @@ function tryLogin(e, email, password){
 
 module.exports = {init}
 },{"./alert":29,"axios":2}],31:[function(require,module,exports){
+const axios = require('axios')
+const baseURL = 'http://localhost:3000'
+
+function init(){
+    const cards = document.querySelectorAll('.card')
+    for(let card of cards){
+        card.addEventListener('click', function(e){modal(e)})
+    }
+}
+
+function modal(e){
+    e.stopPropagation()
+    const id = e.currentTarget.getAttribute('data-id')
+    console.log(id)
+    return axios.get(baseURL+`/api/snacks/${id}`)
+    .then(result => {
+        console.log(result)
+        document.querySelector('body').innerHTML += modalHTML(result.data[0])
+        $('.ui.modal')
+            .modal('show')
+            ;
+    })
+
+}
+
+
+function modalHTML(card){
+    console.log(card)
+   return  `
+   <div class="ui modal" >
+        <i class="close icon"></i>
+        <div class="image content">
+            <div class="ui medium image">
+                <img src="${card.img}" alt="Image of ${card.name}">
+            </div>
+            <div class="description">
+                <div class="ui header">${card.name}</div>
+                <p>${card.description}</p>
+                
+                <div class="ui vertical animated button" tabindex="0">
+                    <div class="visible content">$${card.price}</div>
+                    <div class="hidden content">
+                        <i class="shop icon"></i>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+            <div class="actions">
+                <div class="ui positive right labeled icon button">
+                    add a review
+                    <i class="checkmark icon"></i>
+                </div>
+            </div>
+        </div>`
+}
+module.exports = {init}
+},{"axios":2}],32:[function(require,module,exports){
 const axios = require('axios') 
 const baseURL = 'http://localhost:3000'
+const reviews = require('./reviews')
 
 function init(){
     const token = localStorage.getItem('token')
@@ -1696,7 +1756,7 @@ function init(){
         customGreet(response.data.user)
         displaySnacks()
     })
-    .catch(() => {
+    .catch(err => {
         localStorage.removeItem('token')
         window.location.pathname = '/'
     })
@@ -1704,7 +1764,7 @@ function init(){
 
 function customGreet(user){
     document.querySelector('body').setAttribute('data-id', user.id)
-    document.querySelector('body').innerHTML += `What's cooking, ${user.first_name}?`
+    document.querySelector('#snacks header h2').innerHTML += `What's cooking, ${user.first_name}?`
 }
 
 function displaySnacks(){
@@ -1715,15 +1775,27 @@ function displaySnacks(){
         return indexedResults
     })
     .then(index => {
-        axios.get(baseURL+`/users/${id}/reviews`)
-        .then(result => {
-            console.log(result)
-            result.data.data.forEach(item => index[item.id].reviewed = true)
+            axios.get(baseURL + `/users/${id}/reviews`)
+            .then(result => {
+                result.data.data.forEach(item => index[item.snack_id].reviewed = true)
+                return addReviewCt(index)
+            })
+            .then(index => {
             HTMLify(index)
-        })
+            return reviews.init()
+            })
+        
         .catch(err => console.log(err))
     })
 
+}
+function addReviewCt(index){
+    return axios.get(baseURL + `/reviews/count`)
+    .then(result => {
+        result.data.data.forEach(snack => index[snack.snack_id].reviews = snack.count)
+        return index
+    })
+    .catch(err => console.log(err))
 }
 
 function index(arr){
@@ -1737,39 +1809,38 @@ function index(arr){
 function HTMLify(obj){
     let HTMLArray = []
     for (let key in obj){   
-        let result = snackTemplate(obj[key])
-        if (obj[key].hasOwnProperty('reviewed') ) console.log('found')
+        let result = snackTemplate(obj[key]) 
         HTMLArray.push(result)
     }
-    document.querySelector('body').innerHTML = HTMLArray.join('')
+    document.querySelector('#cardHolder').innerHTML = HTMLArray.join('')
 }
 
 function snackTemplate(snack){
     let colorClass = false
     if(snack.reviewed) colorClass ='olive'
+    let reviews = '0 reviews'
+    if(snack.reviews == 1) reviews = `${snack.reviews} review` 
+    else if (snack.reviews > 1) reviews = `${snack.reviews} reviews`
+    
 return `
-    <div class="${colorClass || ' '} card" data-id="${snack.id}">
-        <div class="image">
-            <img src="${snack.img}" alt="Image of ${snack.name}>
+    <div class="${colorClass || ''} fluid card" data-id="${snack.id}">
+        <div class="image" style="background-image:url('${snack.img}')">
         </div>
 
         <div class="content">
             <div class="header">${snack.name}</div>
-            <div class="meta">
-                <a>Friends</a>
-            </div>
         </div>
 
         <div class="extra content">
-            <span class="right floated">Joined in 2013</span>
             <span>
-                <i class="comment outline"></i>
-                0 reviews
+                <i class="comments outline icon"></i>
+                ${reviews}
             </span>
         </div>
 
     </div>`
 }
 
+
 module.exports = {init}
-},{"axios":2}]},{},[1]);
+},{"./reviews":31,"axios":2}]},{},[1]);

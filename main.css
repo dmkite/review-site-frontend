@@ -23,10 +23,56 @@ body > .grid {
     color:red;
     border:2px solid red;
 }
-.card{
-    transform:scale(.5)
+#snacks .card{
+    /* transform:scale(.5 */
+    /* width:30%; */
+    margin-bottom:100px;
 }
 
 .olive{
     border-bottom:2px solid red;
+}
+
+#snacks .card .image{
+    width:100%;
+    padding-bottom:100%;
+}
+
+#cardHolder{
+    padding-top:100px;
+    width:100%;
+    max-width:1024px;
+    margin:0 auto;
+}
+
+#snacks header{
+    background-image:url('img/snacks.jpg');
+    background-size:100%;
+    margin-bottom:20px;
+}
+
+#snacks header h2{
+    font: 900 36px/200px 'Playfair Display', serif;
+    padding-bottom:150px;
+    color:white;
+    text-align:center;
+}
+nav{
+    position:absolute;
+    width:100%;
+    outline:1px solid white;
+}
+nav p{
+    color:white;
+    float:right;
+    padding:10px;
+}
+
+nav p:hover{
+    cursor:pointer;
+    text-decoration:underline
+}
+
+.modal{
+    z-index:9999;
 }
