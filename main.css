@@ -23,3 +23,10 @@ body > .grid {
     color:red;
     border:2px solid red;
 }
+.card{
+    transform:scale(.5)
+}
+
+.olive{
+    border-bottom:2px solid red;
+}
