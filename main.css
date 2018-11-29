@@ -23,14 +23,15 @@ body > .grid {
     color:red;
     border:2px solid red;
 }
+
+.success{
+    color:green;
+    border:green
+}
 #snacks .card{
     /* transform:scale(.5 */
     /* width:30%; */
     margin-bottom:100px;
-}
-
-.olive{
-    border-bottom:2px solid red;
 }
 
 #snacks .card .image{
@@ -164,3 +165,4 @@ aside{
 .confirmBox .button{
     display: inline-block;
 }
+

@@ -95,7 +95,7 @@ function customizeReview(review){
 function reviewHTML(review){ 
     const {deleteEdit, img} = customizeReview(review) 
     return `
-    <div class="review">
+    <div class="review" data-id="${review.id}">
         <div class="profPic">${img}</div>
 
         <div class="reviewContent">
