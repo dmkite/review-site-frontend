@@ -2,6 +2,8 @@ const axios = require('axios')
 const alert = require('./alert')
 const baseURL = 'http://localhost:3000'
 const create = require('./create')
+const reviews = require('./reviews')
+
 function addListenerToMany(eleArr, fn){
     eleArr.forEach(ele => ele.addEventListener('click', fn))
 }
@@ -56,10 +58,10 @@ function remove(){
     .then(result => {
         alert(success, result.data)
         review.remove()
-        window.location.pathname = '/snacks.html'
+        // reviews.getReviews(document.querySelector('.modal').getAttribute('data-id'))
     })
     .catch(err => {
-        alert(danger, err)
+        alert('danger', err)
     })
 }
 
@@ -114,7 +116,6 @@ function inputConfirmed() {
     input[0].parentElement.innerHTML = input[0].value
     input[1].parentElement.innerHTML = input[1].value
     textarea.parentElement.innerHTML = textarea.value
-    
 }
 
 function accumulateVals(){

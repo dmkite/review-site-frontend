@@ -1654,13 +1654,14 @@ module.exports = alert
 },{}],30:[function(require,module,exports){
 const axios = require('axios')
 const reviewCrud = require('./review-crud')
+const reviews = require('./reviews')
+const baseURL = 'http://localhost:3000'
 
 function init(){
     let createBtn = document.querySelector('#create')
     createBtn.onclick = null
     createBtn.addEventListener('click', reviewSetup)
 }
-
 
 function reviewSetup(){
     document.querySelector('#create').classList.add('disabled')
@@ -1686,28 +1687,44 @@ function reviewTemplate(){
 }
 
 function submitReview(e){
-    const review = reviewCrud.accumulateVals()
-    delete review.id()
-    console.log(review)
+    const token = localStorage.getItem('token')
+    if(!token) window.location.pathname = '/'
+    const id = document.querySelector('body').getAttribute('data-id')
+    const review = accumulateVals()
+    axios(baseURL + `/reviews/${id}`, {
+        method: 'post',
+        headers: { 'Authorization': `Bearer ${token}` },
+        data: review
+    })
+    .then(result => {
+        console.log(result)
+        e.target.parentElement.parentElement.setAttribute('data-id', result.data.data[0].id)
+        // reviews.getReviews(document.querySelector('.modal').getAttribute('data-id'))
+    })
+    .catch(err => console.error(err))
 }
 
 function accumulateVals() {
     result = {}
-    result.id = document.querySelector('.positive').parentElement.parentElement.getAttribute('data-id')
     result.user_id = document.querySelector('body').getAttribute('data-id')
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelector('.rating').getAttribute('')
+    result.rating = getStarRating()
     result.text = document.querySelector('textarea').value
     return result
 }
 
 function getStarRating() {
     const stars = document.querySelector('.rating').children
+    let rating = 0
+    for(let star of stars){
+        if (star.classList.contains('active')) rating++
+    }
+    return rating
 }
 
 module.exports = {init}
-},{"./review-crud":32,"axios":2}],31:[function(require,module,exports){
+},{"./review-crud":32,"./reviews":33,"axios":2}],31:[function(require,module,exports){
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
 const alert = require('./alert')
@@ -1740,6 +1757,8 @@ const axios = require('axios')
 const alert = require('./alert')
 const baseURL = 'http://localhost:3000'
 const create = require('./create')
+const reviews = require('./reviews')
+
 function addListenerToMany(eleArr, fn){
     eleArr.forEach(ele => ele.addEventListener('click', fn))
 }
@@ -1794,10 +1813,10 @@ function remove(){
     .then(result => {
         alert(success, result.data)
         review.remove()
-        window.location.pathname = '/snacks.html'
+        // reviews.getReviews(document.querySelector('.modal').getAttribute('data-id'))
     })
     .catch(err => {
-        alert(danger, err)
+        alert('danger', err)
     })
 }
 
@@ -1852,7 +1871,6 @@ function inputConfirmed() {
     input[0].parentElement.innerHTML = input[0].value
     input[1].parentElement.innerHTML = input[1].value
     textarea.parentElement.innerHTML = textarea.value
-    
 }
 
 function accumulateVals(){
@@ -1868,7 +1886,7 @@ function accumulateVals(){
 
 module.exports = {init, accumulateVals}
 
-},{"./alert":29,"./create":30,"axios":2}],33:[function(require,module,exports){
+},{"./alert":29,"./create":30,"./reviews":33,"axios":2}],33:[function(require,module,exports){
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
 const reviewCrud = require('./review-crud')
@@ -1949,9 +1967,12 @@ function modalHTML(card){
 function getReviews(id){
     return axios.get(baseURL + `/api/snacks/${id}/reviews`)
     .then(result => {
+        console.log(result)
         const reviewArray = []
-        result.data.forEach(review => reviewArray.push(reviewHTML(review)))
-        document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
+        if (result.data.length > 0){
+            result.data.forEach(review => reviewArray.push(reviewHTML(review)))
+            document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
+        }
         return reviewCrud.init()
     })
 }
@@ -1968,6 +1989,7 @@ function customizeReview(review){
 function reviewHTML(review){ 
     const {deleteEdit, img} = customizeReview(review) 
     return `
+    
     <div class="review" data-id="${review.id}">
         <div class="profPic">${img}</div>
 
@@ -1980,7 +2002,7 @@ function reviewHTML(review){
     </div>`
 }
 
-module.exports = {init}
+module.exports = {init, getReviews}
 },{"./review-crud":32,"axios":2}],34:[function(require,module,exports){
 const axios = require('axios') 
 const baseURL = 'http://localhost:3000'

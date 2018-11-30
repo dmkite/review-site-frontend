@@ -1,12 +1,13 @@
 const axios = require('axios')
 const reviewCrud = require('./review-crud')
+const reviews = require('./reviews')
+const baseURL = 'http://localhost:3000'
 
 function init(){
     let createBtn = document.querySelector('#create')
     createBtn.onclick = null
     createBtn.addEventListener('click', reviewSetup)
 }
-
 
 function reviewSetup(){
     document.querySelector('#create').classList.add('disabled')
@@ -32,24 +33,40 @@ function reviewTemplate(){
 }
 
 function submitReview(e){
-    const review = reviewCrud.accumulateVals()
-    delete review.id()
-    console.log(review)
+    const token = localStorage.getItem('token')
+    if(!token) window.location.pathname = '/'
+    const id = document.querySelector('body').getAttribute('data-id')
+    const review = accumulateVals()
+    axios(baseURL + `/reviews/${id}`, {
+        method: 'post',
+        headers: { 'Authorization': `Bearer ${token}` },
+        data: review
+    })
+    .then(result => {
+        console.log(result)
+        e.target.parentElement.parentElement.setAttribute('data-id', result.data.data[0].id)
+        // reviews.getReviews(document.querySelector('.modal').getAttribute('data-id'))
+    })
+    .catch(err => console.error(err))
 }
 
 function accumulateVals() {
     result = {}
-    result.id = document.querySelector('.positive').parentElement.parentElement.getAttribute('data-id')
     result.user_id = document.querySelector('body').getAttribute('data-id')
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelector('.rating').getAttribute('')
+    result.rating = getStarRating()
     result.text = document.querySelector('textarea').value
     return result
 }
 
 function getStarRating() {
     const stars = document.querySelector('.rating').children
+    let rating = 0
+    for(let star of stars){
+        if (star.classList.contains('active')) rating++
+    }
+    return rating
 }
 
 module.exports = {init}

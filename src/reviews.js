@@ -78,9 +78,12 @@ function modalHTML(card){
 function getReviews(id){
     return axios.get(baseURL + `/api/snacks/${id}/reviews`)
     .then(result => {
+        console.log(result)
         const reviewArray = []
-        result.data.forEach(review => reviewArray.push(reviewHTML(review)))
-        document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
+        if (result.data.length > 0){
+            result.data.forEach(review => reviewArray.push(reviewHTML(review)))
+            document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
+        }
         return reviewCrud.init()
     })
 }
@@ -97,6 +100,7 @@ function customizeReview(review){
 function reviewHTML(review){ 
     const {deleteEdit, img} = customizeReview(review) 
     return `
+    
     <div class="review" data-id="${review.id}">
         <div class="profPic">${img}</div>
 
@@ -109,4 +113,4 @@ function reviewHTML(review){
     </div>`
 }
 
-module.exports = {init}
+module.exports = {init, getReviews}
