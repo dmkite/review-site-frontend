@@ -13,7 +13,7 @@ const paths = {
 if(paths[path]){paths[path]()}
 
 // else {console.error(`no path written for ${path}`)}
-},{"./src/login":31,"./src/snacks":34}],2:[function(require,module,exports){
+},{"./src/login":31,"./src/snacks":33}],2:[function(require,module,exports){
 module.exports = require('./lib/axios');
 },{"./lib/axios":4}],3:[function(require,module,exports){
 (function (process){
@@ -1645,21 +1645,18 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],29:[function(require,module,exports){
-function alert(type, message){
-    const alertHTML = `<div class="${type} alert">${message}</div>`
-    document.querySelector('body').innerHTML += alertHTML
-}
-
-module.exports = alert
-},{}],30:[function(require,module,exports){
 const axios = require('axios')
-const reviewCrud = require('./review-crud')
+const reviewCrud = require('./delete')
 const reviews = require('./reviews')
 const baseURL = 'http://localhost:3000'
+const {reviewTemplate, reviewHTML} = require('./templates')
+const update = require('./update')
+const del = require('./delete')
 
 function init(){
+    const edit = document.querySelectorAll('.edit')
     let createBtn = document.querySelector('#create')
-    createBtn.onclick = null
+    // createBtn.onclick = null
     createBtn.addEventListener('click', reviewSetup)
 }
 
@@ -1669,21 +1666,6 @@ function reviewSetup(){
     $('.rating').rating();
     $('.toggle .rating').rating({initialRating: 2, maxRating: 5});
     document.querySelector('#submit').addEventListener('click', function(e){submitReview(e)})
-}
-
-function reviewTemplate(){
-    return `
-    <div class="newReview">
-        <form class="reviewForm">
-            <label for="title">Title:</label>
-            <input id="Title" required maxlength="50">
-            <label for="rating">Rating:</label>
-            <div id="rating" class="ui rating" data-max-rating="5"></div>
-            <label for="text">What's the scoop?</label>
-            <textarea id="text" required maxlength="255"></textarea>
-            <div id="submit" class="ui positive button">submit</div>
-        </form>
-    </div>`
 }
 
 function submitReview(e){
@@ -1697,11 +1679,21 @@ function submitReview(e){
         data: review
     })
     .then(result => {
-        console.log(result)
         e.target.parentElement.parentElement.setAttribute('data-id', result.data.data[0].id)
-        // reviews.getReviews(document.querySelector('.modal').getAttribute('data-id'))
+        getReviews(document.querySelector('.modal').getAttribute('data-id'))
     })
     .catch(err => console.error(err))
+}
+
+function getReviews(id) {
+    return axios.get(baseURL + `/api/snacks/${id}/reviews`)
+        .then(result => {
+            const reviewArray = []
+            if (result.data.length > 0) {
+                result.data.forEach(review => reviewArray.push(reviewHTML(review)))
+                document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
+            }
+        })
 }
 
 function accumulateVals() {
@@ -1724,71 +1716,25 @@ function getStarRating() {
 }
 
 module.exports = {init}
-},{"./review-crud":32,"./reviews":33,"axios":2}],31:[function(require,module,exports){
+},{"./delete":30,"./reviews":32,"./templates":34,"./update":35,"axios":2}],30:[function(require,module,exports){
 const axios = require('axios')
-const baseURL = 'http://localhost:3000'
-const alert = require('./alert')
-
-function init(){
-    const login = document.querySelector('#login')
-
-    login.addEventListener('submit', function(e){
-        const email = document.querySelector('#email').value
-        const password = document.querySelector('#password').value
-        tryLogin(e, email, password)
-    })
-}
-
-function tryLogin(e, email, password){
-    e.preventDefault()
-    return axios.post(baseURL+'/auth/login', {email, password})
-    .then(result => {
-        localStorage.setItem('token', result.data.token)
-        window.location.pathname = '/snacks.html'
-    })
-    .catch(err => {
-        alert('danger', err)
-    })
-}
-
-module.exports = {init}
-},{"./alert":29,"axios":2}],32:[function(require,module,exports){
-const axios = require('axios')
-const alert = require('./alert')
+const alert = require('./utils')
 const baseURL = 'http://localhost:3000'
 const create = require('./create')
-const reviews = require('./reviews')
-
-function addListenerToMany(eleArr, fn){
-    eleArr.forEach(ele => ele.addEventListener('click', fn))
-}
+const{confirmHTML} = require('./templates')
+const {addListenerToMany, addButtonListeners} = require('./utils')
 
 function init(){
-    const edit = document.querySelectorAll('.edit')
     const trash = document.querySelectorAll('.trash')
-    addListenerToMany(edit, function(e){editReview(e)})
-    addListenerToMany(trash, function (e) { delReview(e) })
-    if(!!edit.length) document.querySelector('#create').classList.add('disabled')
-    else create.init()
+    if (trash.length){ 
+        addListenerToMany(trash, function (e) { delReview(e) })
+        document.querySelector('#create').classList.add('disabled')
+    }
 }
 
 function delReview(e){
     e.target.parentElement.innerHTML += confirmHTML('deny', 'negative', 'cancel', 'delete')
     addButtonListeners(minimize, remove)
-}
-
-function confirmHTML(type1, type2, text1, text2){
-    return `
-    <div class="confirmBox" >
-        Are you sure about that?
-        <div id="button1" class="ui ${type1} button">${text1}</div>
-        <div id="button2" class="ui ${type2} button">${text2}</div>
-    </div >`
-}
-
-function addButtonListeners(fn1, fn2){
-    document.querySelector('#button1').addEventListener('click', fn1)
-    document.querySelector('#button2').addEventListener('click', fn2)
 }
 
 function minimize(){
@@ -1820,76 +1766,43 @@ function remove(){
     })
 }
 
-function editReview(e){
-    const originalVals = textToInput(e)
-    e.target.parentElement.innerHTML += confirmHTML('deny', 'positive','cancel', 'update')
-    addButtonListeners(function(e){minimize2(e, originalVals)}, function(e){update(e)})
-}
+module.exports = {init, addListenerToMany}
 
-function minimize2(e, originalVals){
-    minimize()
-    inputToText(e, originalVals)
-}
-
-function textToInput(e){
-    let contentH3 = e.target.parentElement.children[0].textContent
-    let contentRating = e.target.parentElement.children[1].textContent
-    let contentText = e.target.parentElement.children[2].textContent
-    e.target.parentElement.children[0].innerHTML = `<input type="text" required value="${contentH3}">`
-    e.target.parentElement.children[1].innerHTML = `<input type="text" required value="${contentRating}">`
-    e.target.parentElement.children[2].innerHTML = `<textarea required value="${contentText}">${contentText}</textarea>`
-    const originalVals = {contentH3, contentRating, contentText}
-    return originalVals
-}
-
-function inputToText(e, { contentH3, contentRating, contentText }){
-    e.target.parentElement.parentElement.children[0].innerHTML = contentH3
-    e.target.parentElement.parentElement.children[1].innerHTML = contentRating
-    e.target.parentElement.parentElement.children[2].innerHTML = contentText
-}
-
-function update(e){
-    let {id, user_id, snack_id, title, rating, text} = accumulateVals()
-    const token = localStorage.getItem('token')
-    if (!token) return window.location.pathname = '/'
-
-    axios(baseURL + `/reviews/${user_id}`, {
-        method: 'put', 
-        headers: { 'Authorization': `Bearer ${token}`},
-        data: { id, user_id, snack_id, title, rating, text }
-    })
-    .then(result => {
-    inputConfirmed()
-    minimize()
-    })
-    .catch(err => console.log(err))
-}
-
-function inputConfirmed() {
-    const input = document.querySelectorAll('input')
-    const textarea = document.querySelector('textarea')
-    input[0].parentElement.innerHTML = input[0].value
-    input[1].parentElement.innerHTML = input[1].value
-    textarea.parentElement.innerHTML = textarea.value
-}
-
-function accumulateVals(){
-    result = {}
-    result.id = document.querySelector('.positive').parentElement.parentElement.getAttribute('data-id')
-    result.user_id = document.querySelector('body').getAttribute('data-id')
-    result.snack_id = document.querySelector('.modal').getAttribute('data-id')
-    result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelectorAll('input')[1].value
-    result.text = document.querySelector('textarea').value
-    return result
-}
-
-module.exports = {init, accumulateVals}
-
-},{"./alert":29,"./create":30,"./reviews":33,"axios":2}],33:[function(require,module,exports){
+},{"./create":29,"./templates":34,"./utils":36,"axios":2}],31:[function(require,module,exports){
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
-const reviewCrud = require('./review-crud')
+const {alert} = require('./utils')
+
+function init(){
+    const login = document.querySelector('#login')
+
+    login.addEventListener('submit', function(e){
+        const email = document.querySelector('#email').value
+        const password = document.querySelector('#password').value
+        tryLogin(e, email, password)
+    })
+}
+
+function tryLogin(e, email, password){
+    e.preventDefault()
+    return axios.post(baseURL+'/auth/login', {email, password})
+    .then(result => {
+        localStorage.setItem('token', result.data.token)
+        window.location.pathname = '/snacks.html'
+    })
+    .catch(err => {
+        alert('danger', err)
+    })
+}
+
+module.exports = {init}
+},{"./utils":36,"axios":2}],32:[function(require,module,exports){
+const axios = require('axios')
+const baseURL = 'http://localhost:3000'
+const del = require('./delete')
+const create = require('./create')
+const update = require('./update')
+const {modalHTML, reviewHTML} = require('./templates')
 
 function init(){
     const cards = document.querySelectorAll('.card')
@@ -1909,7 +1822,18 @@ function modal(e){
             ;
         document.querySelector('.close').addEventListener('click', remove)
         getReviews(id)
+        initPath()
+        document.querySelector('.modal').onclick = initPath
     })
+}
+
+function initPath(){
+    const edit = document.querySelectorAll('.edit')
+    if (!!edit.length) {
+        del.init()
+        update.init()
+    }
+    else create.init()
 }
 
 function remove(e){
@@ -1918,95 +1842,28 @@ function remove(e){
         function(){
             modal.remove()
             init()
-        },
-        250
-    )
-}
-
-function modalHTML(card){
-   return  `
-   <div class="ui modal" data-id="${card.id}" >
-        <i class="close icon"></i>
-        <div class="header">${card.name}</div>
-        <div class="container">
-        <main>
-            <div class="image content">
-                <div class="ui medium image">
-                    <img src="${card.img}" alt="Image of ${card.name}">
-                </div>
-                <div class="description">
-                    <p>${card.description}</p>
-                    
-                    <div class="ui vertical animated button" tabindex="0">
-                        <div class="visible content">$${card.price}</div>
-                        <div class="hidden content">
-                            <i class="shop icon"></i>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </main>
-        <aside>
-        <h3>Comments</h3>
-        <div class="commentsContainer">Be the first to review ${card.name}!</div>
-        </aside>
-    </div>
-        
-            <div class="bottom">
-                   
-                    <div id="create" class="ui positive right labeled icon button">
-                        add a review
-                        <i class="plus circle icon"></i>
-                    </div>
-                
-            </div>
-        </div>`
+        },250)
 }
 
 function getReviews(id){
     return axios.get(baseURL + `/api/snacks/${id}/reviews`)
     .then(result => {
-        console.log(result)
         const reviewArray = []
         if (result.data.length > 0){
             result.data.forEach(review => reviewArray.push(reviewHTML(review)))
             document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
         }
-        return reviewCrud.init()
     })
 }
 
-function customizeReview(review){
-    let deleteEdit = ''
-    const userId = document.querySelector('body').getAttribute('data-id')    
-    if (review.user_id == userId) deleteEdit = '<i class="edit icon"></i> <i class="trash alternate icon"></i>'
-    let img = review.img
-    if (!review.img) img = `<p>${review.first_name[0]}</p>`
-    return {deleteEdit, img}
-}
 
-function reviewHTML(review){ 
-    const {deleteEdit, img} = customizeReview(review) 
-    return `
-    
-    <div class="review" data-id="${review.id}">
-        <div class="profPic">${img}</div>
-
-        <div class="reviewContent">
-            <h3>${review.title}</h3>
-            <p>${review.rating}</p>
-            <p>${review.text}</p>
-            ${deleteEdit}
-        </div>
-    </div>`
-}
 
 module.exports = {init, getReviews}
-},{"./review-crud":32,"axios":2}],34:[function(require,module,exports){
+},{"./create":29,"./delete":30,"./templates":34,"./update":35,"axios":2}],33:[function(require,module,exports){
 const axios = require('axios') 
 const baseURL = 'http://localhost:3000'
 const reviews = require('./reviews')
+const {snackTemplate} = require('./templates')
 
 function init(){
     const token = localStorage.getItem('token')
@@ -2080,14 +1937,109 @@ function HTMLify(obj){
     document.querySelector('#cardHolder').innerHTML = HTMLArray.join('')
 }
 
-function snackTemplate(snack){
-    let colorClass = false
-    if(snack.reviewed) colorClass ='olive'
-    let reviews = '0 reviews'
-    if(snack.reviews == 1) reviews = `${snack.reviews} review` 
-    else if (snack.reviews > 1) reviews = `${snack.reviews} reviews`
+
+
+
+module.exports = {init}
+},{"./reviews":32,"./templates":34,"axios":2}],34:[function(require,module,exports){
+function confirmHTML(type1, type2, text1, text2) {
+    return `
+    <div class="confirmBox" >
+        Are you sure about that?
+        <div id="button1" class="ui ${type1} button">${text1}</div>
+        <div id="button2" class="ui ${type2} button">${text2}</div>
+    </div >`
+}
+
+function reviewTemplate() {
+    return `
+    <div class="newReview">
+        <form class="reviewForm">
+            <label for="title">Title:</label>
+            <input id="Title" required maxlength="50">
+            <label for="rating">Rating:</label>
+            <div id="rating" class="ui rating" data-max-rating="5"></div>
+            <label for="text">What's the scoop?</label>
+            <textarea id="text" required maxlength="255"></textarea>
+            <div id="submit" class="ui positive button">submit</div>
+        </form>
+    </div>`
+}
+
+function modalHTML(card) {
+    return `
+   <div class="ui modal" data-id="${card.id}" >
+        <i class="close icon"></i>
+        <div class="header">${card.name}</div>
+        <div class="container">
+        <main>
+            <div class="image content">
+                <div class="ui medium image">
+                    <img src="${card.img}" alt="Image of ${card.name}">
+                </div>
+                <div class="description">
+                    <p>${card.description}</p>
+                    
+                    <div class="ui vertical animated button" tabindex="0">
+                        <div class="visible content">$${card.price}</div>
+                        <div class="hidden content">
+                            <i class="shop icon"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+        <aside>
+        <h3>Comments</h3>
+        <div class="commentsContainer">Be the first to review ${card.name}!</div>
+        </aside>
+    </div>
+        
+            <div class="bottom">
+                   
+                    <div id="create" class="ui positive right labeled icon button">
+                        add a review
+                        <i class="plus circle icon"></i>
+                    </div>
+                
+            </div>
+        </div>`
+}
+
+function customizeReview(review) {
+    let deleteEdit = ''
+    const userId = document.querySelector('body').getAttribute('data-id')
+    if (review.user_id == userId) deleteEdit = '<i class="edit icon"></i> <i class="trash alternate icon"></i>'
+    let img = review.img
+    if (!review.img) img = `<p>${review.first_name[0]}</p>`
+    return { deleteEdit, img }
+}
+
+function reviewHTML(review) {
+    const { deleteEdit, img } = customizeReview(review)
+    return `
     
-return `
+    <div class="review" data-id="${review.id}">
+        <div class="profPic">${img}</div>
+
+        <div class="reviewContent">
+            <h3>${review.title}</h3>
+            <p>${review.rating}</p>
+            <p>${review.text}</p>
+            ${deleteEdit}
+        </div>
+    </div>`
+}
+
+function snackTemplate(snack) {
+    let colorClass = false
+    if (snack.reviewed) colorClass = 'olive'
+    let reviews = '0 reviews'
+    if (snack.reviews == 1) reviews = `${snack.reviews} review`
+    else if (snack.reviews > 1) reviews = `${snack.reviews} reviews`
+
+    return `
     <div class="${colorClass || ''} fluid card" data-id="${snack.id}">
         <div class="image" style="background-image:url('${snack.img}')">
         </div>
@@ -2106,6 +2058,104 @@ return `
     </div>`
 }
 
+module.exports = {confirmHTML, reviewTemplate, modalHTML, reviewHTML, snackTemplate}
+},{}],35:[function(require,module,exports){
+const axios = require('axios')
+const {addButtonListeners, addListenerToMany} = require('./utils')
+const {confirmHTML} = require('./templates')
+const baseURL = 'http://localhost:3000'
+
+function init(){
+    const edit = document.querySelectorAll('.edit')
+    if (edit.length) addListenerToMany(edit, function (e) { editReview(e) })
+}
+
+function editReview(e) {
+    const originalVals = textToInput(e)
+    e.target.parentElement.innerHTML += confirmHTML('deny', 'positive', 'cancel', 'update')
+    addButtonListeners(function (e) { minimize(e, originalVals) }, function (e) { update(e) })
+}
+
+function minimize(e, originalVals) {
+    const box = document.querySelector('.confirmBox')
+    setTimeout(
+        function () {
+            box.style.animation = 'shrink .25s ease-out'
+            setTimeout(function () { box.remove() }, 250)
+        }, 0)
+    return inputToText(e, originalVals)
+}
+
+function inputToText(e, { contentH3, contentRating, contentText }) {
+    e.target.parentElement.parentElement.children[0].innerHTML = contentH3
+    e.target.parentElement.parentElement.children[1].innerHTML = contentRating
+    e.target.parentElement.parentElement.children[2].innerHTML = contentText
+}
+
+function update(e) {
+    let { id, user_id, snack_id, title, rating, text } = accumulateVals()
+    const token = localStorage.getItem('token')
+    if (!token) return window.location.pathname = '/'
+
+    axios(baseURL + `/reviews/${user_id}`, {
+        method: 'put',
+        headers: { 'Authorization': `Bearer ${token}` },
+        data: { id, user_id, snack_id, title, rating, text }
+    })
+        .then(result => {
+            inputConfirmed()
+            minimize()
+        })
+        .catch(err => console.log(err))
+}
+
+
+function textToInput(e) {
+    let contentH3 = e.target.parentElement.children[0].textContent
+    let contentRating = e.target.parentElement.children[1].textContent
+    let contentText = e.target.parentElement.children[2].textContent
+    e.target.parentElement.children[0].innerHTML = `<input type="text" required value="${contentH3}">`
+    e.target.parentElement.children[1].innerHTML = `<input type="text" required value="${contentRating}">`
+    e.target.parentElement.children[2].innerHTML = `<textarea required value="${contentText}">${contentText}</textarea>`
+    const originalVals = { contentH3, contentRating, contentText }
+    return originalVals
+}
+
+function inputConfirmed() {
+    const input = document.querySelectorAll('input')
+    const textarea = document.querySelector('textarea')
+    input[0].parentElement.innerHTML = input[0].value
+    input[1].parentElement.innerHTML = input[1].value
+    textarea.parentElement.innerHTML = textarea.value
+    return
+}
+
+function accumulateVals() {
+    result = {}
+    result.id = document.querySelector('.positive').parentElement.parentElement.getAttribute('data-id')
+    result.user_id = document.querySelector('body').getAttribute('data-id')
+    result.snack_id = document.querySelector('.modal').getAttribute('data-id')
+    result.title = document.querySelectorAll('input')[0].value
+    result.rating = document.querySelectorAll('input')[1].value
+    result.text = document.querySelector('textarea').value
+    return result
+}
 
 module.exports = {init}
-},{"./reviews":33,"axios":2}]},{},[1]);
+},{"./templates":34,"./utils":36,"axios":2}],36:[function(require,module,exports){
+function alert(type, message){
+    const alertHTML = `<div class="${type} alert">${message}</div>`
+    document.querySelector('body').innerHTML += alertHTML
+}
+
+function addListenerToMany(eleArr, fn) {
+    eleArr.forEach(ele => ele.addEventListener('click', fn))
+}
+
+function addButtonListeners(fn1, fn2) {
+    document.querySelector('#button1').addEventListener('click', fn1)
+    document.querySelector('#button2').addEventListener('click', fn2)
+}
+
+module.exports = {alert, addListenerToMany, addButtonListeners}
+},{}]},{},[1]);

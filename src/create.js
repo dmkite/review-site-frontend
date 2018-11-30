@@ -1,11 +1,15 @@
 const axios = require('axios')
-const reviewCrud = require('./review-crud')
+const reviewCrud = require('./delete')
 const reviews = require('./reviews')
 const baseURL = 'http://localhost:3000'
+const {reviewTemplate, reviewHTML} = require('./templates')
+const update = require('./update')
+const del = require('./delete')
 
 function init(){
+    const edit = document.querySelectorAll('.edit')
     let createBtn = document.querySelector('#create')
-    createBtn.onclick = null
+    // createBtn.onclick = null
     createBtn.addEventListener('click', reviewSetup)
 }
 
@@ -15,21 +19,6 @@ function reviewSetup(){
     $('.rating').rating();
     $('.toggle .rating').rating({initialRating: 2, maxRating: 5});
     document.querySelector('#submit').addEventListener('click', function(e){submitReview(e)})
-}
-
-function reviewTemplate(){
-    return `
-    <div class="newReview">
-        <form class="reviewForm">
-            <label for="title">Title:</label>
-            <input id="Title" required maxlength="50">
-            <label for="rating">Rating:</label>
-            <div id="rating" class="ui rating" data-max-rating="5"></div>
-            <label for="text">What's the scoop?</label>
-            <textarea id="text" required maxlength="255"></textarea>
-            <div id="submit" class="ui positive button">submit</div>
-        </form>
-    </div>`
 }
 
 function submitReview(e){
@@ -43,11 +32,21 @@ function submitReview(e){
         data: review
     })
     .then(result => {
-        console.log(result)
         e.target.parentElement.parentElement.setAttribute('data-id', result.data.data[0].id)
-        // reviews.getReviews(document.querySelector('.modal').getAttribute('data-id'))
+        getReviews(document.querySelector('.modal').getAttribute('data-id'))
     })
     .catch(err => console.error(err))
+}
+
+function getReviews(id) {
+    return axios.get(baseURL + `/api/snacks/${id}/reviews`)
+        .then(result => {
+            const reviewArray = []
+            if (result.data.length > 0) {
+                result.data.forEach(review => reviewArray.push(reviewHTML(review)))
+                document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
+            }
+        })
 }
 
 function accumulateVals() {

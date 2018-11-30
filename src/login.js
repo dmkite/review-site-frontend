@@ -1,6 +1,6 @@
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
-const alert = require('./alert')
+const {alert} = require('./utils')
 
 function init(){
     const login = document.querySelector('#login')

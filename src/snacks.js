@@ -1,6 +1,7 @@
 const axios = require('axios') 
 const baseURL = 'http://localhost:3000'
 const reviews = require('./reviews')
+const {snackTemplate} = require('./templates')
 
 function init(){
     const token = localStorage.getItem('token')
@@ -74,31 +75,7 @@ function HTMLify(obj){
     document.querySelector('#cardHolder').innerHTML = HTMLArray.join('')
 }
 
-function snackTemplate(snack){
-    let colorClass = false
-    if(snack.reviewed) colorClass ='olive'
-    let reviews = '0 reviews'
-    if(snack.reviews == 1) reviews = `${snack.reviews} review` 
-    else if (snack.reviews > 1) reviews = `${snack.reviews} reviews`
-    
-return `
-    <div class="${colorClass || ''} fluid card" data-id="${snack.id}">
-        <div class="image" style="background-image:url('${snack.img}')">
-        </div>
 
-        <div class="content">
-            <div class="header">${snack.name}</div>
-        </div>
-
-        <div class="extra content">
-            <span>
-                <i class="comments outline icon"></i>
-                ${reviews}
-            </span>
-        </div>
-
-    </div>`
-}
 
 
 module.exports = {init}
