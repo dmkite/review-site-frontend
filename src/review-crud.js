@@ -128,4 +128,4 @@ function accumulateVals(){
     return result
 }
 
-module.exports = {init}
+module.exports = {init, accumulateVals}

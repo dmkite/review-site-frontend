@@ -1,4 +1,5 @@
 const axios = require('axios')
+const reviewCrud = require('./review-crud')
 
 function init(){
     let createBtn = document.querySelector('#create')
@@ -11,12 +12,8 @@ function reviewSetup(){
     document.querySelector('#create').classList.add('disabled')
     document.querySelector('.commentsContainer').innerHTML += reviewTemplate()
     $('.rating').rating();
-    $('.toggle .rating')
-        .rating({
-            initialRating: 2,
-            maxRating: 5
-        })
-        ;
+    $('.toggle .rating').rating({initialRating: 2, maxRating: 5});
+    document.querySelector('#submit').addEventListener('click', function(e){submitReview(e)})
 }
 
 function reviewTemplate(){
@@ -29,11 +26,30 @@ function reviewTemplate(){
             <div id="rating" class="ui rating" data-max-rating="5"></div>
             <label for="text">What's the scoop?</label>
             <textarea id="text" required maxlength="255"></textarea>
-            <div class="ui positive button">submit</div>
+            <div id="submit" class="ui positive button">submit</div>
         </form>
     </div>`
 }
 
+function submitReview(e){
+    const review = reviewCrud.accumulateVals()
+    delete review.id()
+    console.log(review)
+}
 
+function accumulateVals() {
+    result = {}
+    result.id = document.querySelector('.positive').parentElement.parentElement.getAttribute('data-id')
+    result.user_id = document.querySelector('body').getAttribute('data-id')
+    result.snack_id = document.querySelector('.modal').getAttribute('data-id')
+    result.title = document.querySelectorAll('input')[0].value
+    result.rating = document.querySelector('.rating').getAttribute('')
+    result.text = document.querySelector('textarea').value
+    return result
+}
+
+function getStarRating() {
+    const stars = document.querySelector('.rating').children
+}
 
 module.exports = {init}
