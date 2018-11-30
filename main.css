@@ -166,3 +166,12 @@ aside{
     display: inline-block;
 }
 
+.bottom{
+    padding:10px;
+    border-top:1px solid #efefef;
+    text-align:right;
+}
+
+.reviewForm label{
+    display:block;
+}

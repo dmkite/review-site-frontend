@@ -13,7 +13,7 @@ const paths = {
 if(paths[path]){paths[path]()}
 
 // else {console.error(`no path written for ${path}`)}
-},{"./src/login":30,"./src/snacks":33}],2:[function(require,module,exports){
+},{"./src/login":31,"./src/snacks":34}],2:[function(require,module,exports){
 module.exports = require('./lib/axios');
 },{"./lib/axios":4}],3:[function(require,module,exports){
 (function (process){
@@ -1653,6 +1653,46 @@ function alert(type, message){
 module.exports = alert
 },{}],30:[function(require,module,exports){
 const axios = require('axios')
+
+function init(){
+    let createBtn = document.querySelector('#create')
+    createBtn.onclick = null
+    createBtn.addEventListener('click', reviewSetup)
+}
+
+
+function reviewSetup(){
+    document.querySelector('#create').classList.add('disabled')
+    document.querySelector('.commentsContainer').innerHTML += reviewTemplate()
+    $('.rating').rating();
+    $('.toggle .rating')
+        .rating({
+            initialRating: 2,
+            maxRating: 5
+        })
+        ;
+}
+
+function reviewTemplate(){
+    return `
+    <div class="newReview">
+        <form class="reviewForm">
+            <label for="title">Title:</label>
+            <input id="Title" required maxlength="50">
+            <label for="rating">Rating:</label>
+            <div id="rating" class="ui rating" data-max-rating="5"></div>
+            <label for="text">What's the scoop?</label>
+            <textarea id="text" required maxlength="255"></textarea>
+            <div class="ui positive button">submit</div>
+        </form>
+    </div>`
+}
+
+
+
+module.exports = {init}
+},{"axios":2}],31:[function(require,module,exports){
+const axios = require('axios')
 const baseURL = 'http://localhost:3000'
 const alert = require('./alert')
 
@@ -1679,11 +1719,11 @@ function tryLogin(e, email, password){
 }
 
 module.exports = {init}
-},{"./alert":29,"axios":2}],31:[function(require,module,exports){
+},{"./alert":29,"axios":2}],32:[function(require,module,exports){
 const axios = require('axios')
 const alert = require('./alert')
 const baseURL = 'http://localhost:3000'
-
+const create = require('./create')
 function addListenerToMany(eleArr, fn){
     eleArr.forEach(ele => ele.addEventListener('click', fn))
 }
@@ -1693,7 +1733,8 @@ function init(){
     const trash = document.querySelectorAll('.trash')
     addListenerToMany(edit, function(e){editReview(e)})
     addListenerToMany(trash, function (e) { delReview(e) })
-    if(!!edit.length) document.querySelector('.actions .button').classList.add('disabled')
+    if(!!edit.length) document.querySelector('#create').classList.add('disabled')
+    else create.init()
 }
 
 function delReview(e){
@@ -1811,7 +1852,7 @@ function accumulateVals(){
 
 module.exports = {init}
 
-},{"./alert":29,"axios":2}],32:[function(require,module,exports){
+},{"./alert":29,"./create":30,"axios":2}],33:[function(require,module,exports){
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
 const reviewCrud = require('./review-crud')
@@ -1878,11 +1919,13 @@ function modalHTML(card){
         </aside>
     </div>
         
-            <div class="actions">
-                <div class="ui positive right labeled icon button">
-                    add a review
-                    <i class="checkmark icon"></i>
-                </div>
+            <div class="bottom">
+                   
+                    <div id="create" class="ui positive right labeled icon button">
+                        add a review
+                        <i class="plus circle icon"></i>
+                    </div>
+                
             </div>
         </div>`
 }
@@ -1922,7 +1965,7 @@ function reviewHTML(review){
 }
 
 module.exports = {init}
-},{"./review-crud":31,"axios":2}],33:[function(require,module,exports){
+},{"./review-crud":32,"axios":2}],34:[function(require,module,exports){
 const axios = require('axios') 
 const baseURL = 'http://localhost:3000'
 const reviews = require('./reviews')
@@ -2027,4 +2070,4 @@ return `
 
 
 module.exports = {init}
-},{"./reviews":32,"axios":2}]},{},[1]);
+},{"./reviews":33,"axios":2}]},{},[1]);

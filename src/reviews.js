@@ -64,11 +64,13 @@ function modalHTML(card){
         </aside>
     </div>
         
-            <div class="actions">
-                <div class="ui positive right labeled icon button">
-                    add a review
-                    <i class="checkmark icon"></i>
-                </div>
+            <div class="bottom">
+                   
+                    <div id="create" class="ui positive right labeled icon button">
+                        add a review
+                        <i class="plus circle icon"></i>
+                    </div>
+                
             </div>
         </div>`
 }

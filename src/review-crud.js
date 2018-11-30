@@ -1,7 +1,7 @@
 const axios = require('axios')
 const alert = require('./alert')
 const baseURL = 'http://localhost:3000'
-
+const create = require('./create')
 function addListenerToMany(eleArr, fn){
     eleArr.forEach(ele => ele.addEventListener('click', fn))
 }
@@ -11,7 +11,8 @@ function init(){
     const trash = document.querySelectorAll('.trash')
     addListenerToMany(edit, function(e){editReview(e)})
     addListenerToMany(trash, function (e) { delReview(e) })
-    if(!!edit.length) document.querySelector('.actions .button').classList.add('disabled')
+    if(!!edit.length) document.querySelector('#create').classList.add('disabled')
+    else create.init()
 }
 
 function delReview(e){
