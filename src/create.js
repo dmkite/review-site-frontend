@@ -1,10 +1,7 @@
 const axios = require('axios')
-const reviewCrud = require('./delete')
-const reviews = require('./reviews')
 const baseURL = 'http://localhost:3000'
 const {reviewTemplate, reviewHTML} = require('./templates')
-const update = require('./update')
-const del = require('./delete')
+
 
 function init(){
     const edit = document.querySelectorAll('.edit')

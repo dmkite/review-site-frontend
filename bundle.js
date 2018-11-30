@@ -3,17 +3,19 @@ const path = window.location.pathname
 
 const login = require('./src/login')
 const snacks = require('./src/snacks')
+const signup = require('./src/signup')
 
 const paths = {
     '/': login.init,
     '/index.html': login.init,
-    '/snacks.html': snacks.init
+    '/snacks.html': snacks.init,
+    '/signup.html': signup.init
 }
 
 if(paths[path]){paths[path]()}
 
 // else {console.error(`no path written for ${path}`)}
-},{"./src/login":31,"./src/snacks":33}],2:[function(require,module,exports){
+},{"./src/login":31,"./src/signup":33,"./src/snacks":34}],2:[function(require,module,exports){
 module.exports = require('./lib/axios');
 },{"./lib/axios":4}],3:[function(require,module,exports){
 (function (process){
@@ -1646,12 +1648,9 @@ process.umask = function() { return 0; };
 
 },{}],29:[function(require,module,exports){
 const axios = require('axios')
-const reviewCrud = require('./delete')
-const reviews = require('./reviews')
 const baseURL = 'http://localhost:3000'
 const {reviewTemplate, reviewHTML} = require('./templates')
-const update = require('./update')
-const del = require('./delete')
+
 
 function init(){
     const edit = document.querySelectorAll('.edit')
@@ -1716,13 +1715,11 @@ function getStarRating() {
 }
 
 module.exports = {init}
-},{"./delete":30,"./reviews":32,"./templates":34,"./update":35,"axios":2}],30:[function(require,module,exports){
+},{"./templates":35,"axios":2}],30:[function(require,module,exports){
 const axios = require('axios')
-const alert = require('./utils')
 const baseURL = 'http://localhost:3000'
-const create = require('./create')
 const{confirmHTML} = require('./templates')
-const {addListenerToMany, addButtonListeners} = require('./utils')
+const {alert, addListenerToMany, addButtonListeners} = require('./utils')
 
 function init(){
     const trash = document.querySelectorAll('.trash')
@@ -1749,26 +1746,28 @@ function minimize(){
 function remove(){
     const review = document.querySelector('.confirmBox').parentElement.parentElement
     const id = review.getAttribute('data-id')
-
+    console.log(review, id)
     const token = localStorage.getItem('token')
     if (!token) return window.location.pathname = '/'
 
-    axios.delete(baseURL + `/reviews/${id}`, {
+    return axios.delete(baseURL + `/reviews/${id}`, {
         headers: { 'Authorization': `Bearer ${token}`}
     })
     .then(result => {
-        alert(success, result.data)
+        console.log('hitting this result')
+        // alert(success, result.data)
         review.remove()
         // reviews.getReviews(document.querySelector('.modal').getAttribute('data-id'))
     })
     .catch(err => {
+        console.log('possibly?')
         alert('danger', err)
     })
 }
 
 module.exports = {init, addListenerToMany}
 
-},{"./create":29,"./templates":34,"./utils":36,"axios":2}],31:[function(require,module,exports){
+},{"./templates":35,"./utils":37,"axios":2}],31:[function(require,module,exports){
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
 const {alert} = require('./utils')
@@ -1796,7 +1795,7 @@ function tryLogin(e, email, password){
 }
 
 module.exports = {init}
-},{"./utils":36,"axios":2}],32:[function(require,module,exports){
+},{"./utils":37,"axios":2}],32:[function(require,module,exports){
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
 const del = require('./delete')
@@ -1822,14 +1821,15 @@ function modal(e){
             ;
         document.querySelector('.close').addEventListener('click', remove)
         getReviews(id)
-        initPath()
         document.querySelector('.modal').onclick = initPath
     })
 }
 
 function initPath(){
     const edit = document.querySelectorAll('.edit')
+    const createBtn = document.querySelector('#create')
     if (!!edit.length) {
+        createBtn.classList.add('disabled')
         del.init()
         update.init()
     }
@@ -1853,13 +1853,57 @@ function getReviews(id){
             result.data.forEach(review => reviewArray.push(reviewHTML(review)))
             document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
         }
+        initPath()
     })
 }
 
 
 
 module.exports = {init, getReviews}
-},{"./create":29,"./delete":30,"./templates":34,"./update":35,"axios":2}],33:[function(require,module,exports){
+},{"./create":29,"./delete":30,"./templates":35,"./update":36,"axios":2}],33:[function(require,module,exports){
+function init(){
+    console.log('x')
+    document.addEventListener('keydown', activateBtn)
+}
+
+function checkInputs(){
+    const inputs = document.querySelectorAll('input')
+    result = {}
+    for (let input of inputs){
+        if(!input.value) return false
+        result[input.id] = input.value
+    }
+    if (result.retypePassword !== result.password) return false
+    delete result.retypePassword
+    return result
+}
+
+function activateBtn(){
+    checkPasswords()
+    let result = checkInputs()
+    console.log(result)
+    if(!result) return false
+    document.querySelector('#submit').classList.remove('disabled') 
+    document.querySelector('#signup').addEventListener('submit', function(e){submit(e, result)})
+}
+
+function submit(e, result){
+    e.preventDefault()
+    console.log('yup')
+}
+
+function checkPasswords(){
+    const retypePassword = document.querySelector('#retypePassword')
+    const password = document.querySelector('#password')
+    retypePassword.onfocus = function(){
+        while(retypePassword.value !== password.value)
+        document.querySelector('.passwordWarning').classList.remove('hidden')
+    }
+}
+module.exports = {init}
+
+
+},{}],34:[function(require,module,exports){
 const axios = require('axios') 
 const baseURL = 'http://localhost:3000'
 const reviews = require('./reviews')
@@ -1941,8 +1985,10 @@ function HTMLify(obj){
 
 
 module.exports = {init}
-},{"./reviews":32,"./templates":34,"axios":2}],34:[function(require,module,exports){
+},{"./reviews":32,"./templates":35,"axios":2}],35:[function(require,module,exports){
 function confirmHTML(type1, type2, text1, text2) {
+    let box = document.querySelectorAll('.confirmBox')
+    if(box.length > 0) return ''
     return `
     <div class="confirmBox" >
         Are you sure about that?
@@ -2059,7 +2105,7 @@ function snackTemplate(snack) {
 }
 
 module.exports = {confirmHTML, reviewTemplate, modalHTML, reviewHTML, snackTemplate}
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 const axios = require('axios')
 const {addButtonListeners, addListenerToMany} = require('./utils')
 const {confirmHTML} = require('./templates')
@@ -2142,7 +2188,7 @@ function accumulateVals() {
 }
 
 module.exports = {init}
-},{"./templates":34,"./utils":36,"axios":2}],36:[function(require,module,exports){
+},{"./templates":35,"./utils":37,"axios":2}],37:[function(require,module,exports){
 function alert(type, message){
     const alertHTML = `<div class="${type} alert">${message}</div>`
     document.querySelector('body').innerHTML += alertHTML

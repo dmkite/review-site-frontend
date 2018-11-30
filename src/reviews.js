@@ -23,14 +23,15 @@ function modal(e){
             ;
         document.querySelector('.close').addEventListener('click', remove)
         getReviews(id)
-        initPath()
         document.querySelector('.modal').onclick = initPath
     })
 }
 
 function initPath(){
     const edit = document.querySelectorAll('.edit')
+    const createBtn = document.querySelector('#create')
     if (!!edit.length) {
+        createBtn.classList.add('disabled')
         del.init()
         update.init()
     }
@@ -54,6 +55,7 @@ function getReviews(id){
             result.data.forEach(review => reviewArray.push(reviewHTML(review)))
             document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
         }
+        initPath()
     })
 }
 

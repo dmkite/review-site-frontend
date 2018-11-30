@@ -175,3 +175,17 @@ aside{
 .reviewForm label{
     display:block;
 }
+
+#last_name, #first_name{
+    margin-bottom:15px;
+}
+.fields{justify-content: space-between}
+
+.passwordWarning{
+    color:red;
+    text-align:left;
+}
+
+.hidden{
+    visibility:hidden;
+}

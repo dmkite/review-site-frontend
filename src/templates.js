@@ -1,4 +1,6 @@
 function confirmHTML(type1, type2, text1, text2) {
+    let box = document.querySelectorAll('.confirmBox')
+    if(box.length > 0) return ''
     return `
     <div class="confirmBox" >
         Are you sure about that?

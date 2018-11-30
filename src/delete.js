@@ -1,9 +1,7 @@
 const axios = require('axios')
-const alert = require('./utils')
 const baseURL = 'http://localhost:3000'
-const create = require('./create')
 const{confirmHTML} = require('./templates')
-const {addListenerToMany, addButtonListeners} = require('./utils')
+const {alert, addListenerToMany, addButtonListeners} = require('./utils')
 
 function init(){
     const trash = document.querySelectorAll('.trash')
@@ -30,19 +28,21 @@ function minimize(){
 function remove(){
     const review = document.querySelector('.confirmBox').parentElement.parentElement
     const id = review.getAttribute('data-id')
-
+    console.log(review, id)
     const token = localStorage.getItem('token')
     if (!token) return window.location.pathname = '/'
 
-    axios.delete(baseURL + `/reviews/${id}`, {
+    return axios.delete(baseURL + `/reviews/${id}`, {
         headers: { 'Authorization': `Bearer ${token}`}
     })
     .then(result => {
-        alert(success, result.data)
+        console.log('hitting this result')
+        // alert(success, result.data)
         review.remove()
         // reviews.getReviews(document.querySelector('.modal').getAttribute('data-id'))
     })
     .catch(err => {
+        console.log('possibly?')
         alert('danger', err)
     })
 }
