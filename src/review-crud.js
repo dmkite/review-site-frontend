@@ -11,10 +11,10 @@ function init(){
     const trash = document.querySelectorAll('.trash')
     addListenerToMany(edit, function(e){editReview(e)})
     addListenerToMany(trash, function (e) { delReview(e) })
+    if(!!edit.length) document.querySelector('.actions .button').classList.add('disabled')
 }
 
 function delReview(e){
-    console.log(e.target.parentElement)
     e.target.parentElement.innerHTML += confirmHTML('deny', 'negative', 'cancel', 'delete')
     addButtonListeners(minimize, remove)
 }
@@ -37,12 +37,8 @@ function minimize(){
     const box = document.querySelector('.confirmBox')
     setTimeout(
         function(){box.style.animation = 'shrink .25s ease-out'
-        setTimeout(
-            function(){ box.remove()},
-            250
-        )
-    }, 0
-    )
+        setTimeout( function(){ box.remove()}, 250)
+    }, 0)
     init()
 }
 
@@ -53,12 +49,10 @@ function remove(){
     const token = localStorage.getItem('token')
     if (!token) return window.location.pathname = '/'
 
-
     axios.delete(baseURL + `/reviews/${id}`, {
         headers: { 'Authorization': `Bearer ${token}`}
     })
     .then(result => {
-        console.log(result)
         alert(success, result.data)
         review.remove()
         window.location.pathname = '/snacks.html'
@@ -71,13 +65,14 @@ function remove(){
 function editReview(e){
     const originalVals = textToInput(e)
     e.target.parentElement.innerHTML += confirmHTML('deny', 'positive','cancel', 'update')
-    addButtonListeners(function(e){minimize2(e, originalVals)})
+    addButtonListeners(function(e){minimize2(e, originalVals)}, function(e){update(e)})
 }
 
 function minimize2(e, originalVals){
     minimize()
     inputToText(e, originalVals)
 }
+
 function textToInput(e){
     let contentH3 = e.target.parentElement.children[0].textContent
     let contentRating = e.target.parentElement.children[1].textContent
@@ -90,15 +85,46 @@ function textToInput(e){
 }
 
 function inputToText(e, { contentH3, contentRating, contentText }){
-    // console.log(e.target.parentElement.parentElement.children[0].children[0].value)
-    // let contentH3 = e.target.parentElement.parentElement.children[0].children[0].value
-    // let contentRating = e.target.parentElement.parentElement.children[1].children[0].value
-    // let contentText = e.target.parentElement.parentElement.children[2].children[0].value
-
     e.target.parentElement.parentElement.children[0].innerHTML = contentH3
     e.target.parentElement.parentElement.children[1].innerHTML = contentRating
     e.target.parentElement.parentElement.children[2].innerHTML = contentText
 }
 
+function update(e){
+    let {id, user_id, snack_id, title, rating, text} = accumulateVals()
+    const token = localStorage.getItem('token')
+    if (!token) return window.location.pathname = '/'
+
+    axios(baseURL + `/reviews/${user_id}`, {
+        method: 'put', 
+        headers: { 'Authorization': `Bearer ${token}`},
+        data: { id, user_id, snack_id, title, rating, text }
+    })
+    .then(result => {
+    inputConfirmed()
+    minimize()
+    })
+    .catch(err => console.log(err))
+}
+
+function inputConfirmed() {
+    const input = document.querySelectorAll('input')
+    const textarea = document.querySelector('textarea')
+    input[0].parentElement.innerHTML = input[0].value
+    input[1].parentElement.innerHTML = input[1].value
+    textarea.parentElement.innerHTML = textarea.value
+    
+}
+
+function accumulateVals(){
+    result = {}
+    result.id = document.querySelector('.positive').parentElement.parentElement.getAttribute('data-id')
+    result.user_id = document.querySelector('body').getAttribute('data-id')
+    result.snack_id = document.querySelector('.modal').getAttribute('data-id')
+    result.title = document.querySelectorAll('input')[0].value
+    result.rating = document.querySelectorAll('input')[1].value
+    result.text = document.querySelector('textarea').value
+    return result
+}
 
 module.exports = {init}
