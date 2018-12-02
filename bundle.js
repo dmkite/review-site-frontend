@@ -1925,6 +1925,7 @@ const reviews = require('./reviews')
 const {snackTemplate} = require('./templates')
 
 function init(){
+    document.querySelector('#signout').addEventListener('click', signout)
     const token = localStorage.getItem('token')
     if(!token) return window.location.pathname = '/'
     
@@ -1941,6 +1942,11 @@ function init(){
         localStorage.removeItem('token')
         window.location.pathname = '/'
     })
+}
+
+function signout(){
+    localStorage.removeItem('token')
+    window.location.pathname = '/'
 }
 
 function customGreet(user){
@@ -2010,7 +2016,7 @@ function confirmHTML(type1, type2, text1, text2) {
     if(box.length > 0) return ''
     return `
     <div class="confirmBox" >
-        Are you sure about that?
+        <p>Are you sure about that?</p>
         <div id="button1" class="ui ${type1} button">${text1}</div>
         <div id="button2" class="ui ${type2} button">${text2}</div>
     </div >`
@@ -2031,8 +2037,13 @@ function reviewTemplate() {
     </div>`
 }
 
+function calcHref(name){
+    name = name.split('').join('+')
+    return `https://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=` + name
+}
+
 function modalHTML(card) {
-    
+    const href= calcHref(card.name)
     return `
    <div class="ui modal" data-id="${card.id}" >
         <i class="close icon"></i>
@@ -2040,18 +2051,18 @@ function modalHTML(card) {
         <div class="container">
         <main>
             <div class="image content">
-                <div class="ui medium image">
+                <div class="ui">
                     <img src="${card.img}" alt="Image of ${card.name}">
                 </div>
                 <div class="description">
                     <p>${card.description}</p>
                     
-                    <div class="ui vertical animated button" tabindex="0">
+                    <a href="${href}" target="_blank"><div class="ui vertical animated button" tabindex="0">
                         <div class="visible content">$${card.price}</div>
                         <div class="hidden content">
                             <i class="shop icon"></i>
                         </div>
-                    </div>
+                    </div></a>
 
                 </div>
             </div>
@@ -2078,7 +2089,7 @@ function customizeReview(review) {
     const userId = document.querySelector('body').getAttribute('data-id')
     if (review.user_id == userId) deleteEdit = '<i class="edit icon"></i> <i class="trash alternate icon"></i>'
     let img = review.img
-    if (!review.img) img = `<p>${review.first_name[0]}</p>`
+    if (!review.img) img = `<p>${review.first_name[0].toUpperCase()}</p>`
     return { deleteEdit, img }
 }
 
@@ -2139,7 +2150,6 @@ function snackTemplate(snack) {
                 ${avg}
             </span>
         </div>
-
     </div>`
 }
 
@@ -2159,7 +2169,24 @@ function editReview(e) {
     const originalVals = textToInput(e)
     e.target.parentElement.innerHTML += confirmHTML('deny', 'positive', 'cancel', 'update')
     addButtonListeners(function (e) { minimize(e, originalVals) }, function (e) { update(e) })
+    $('.currentEdit').rating('enable')
+    document.querySelector('.currentEdit').classList.remove('currentEdit')
 }
+
+
+function textToInput(e) {
+    let contentH3 = e.target.parentElement.children[0].textContent
+    e.target.parentElement.children[1].classList.add('currentEdit')
+    const stars = document.querySelectorAll('.currentEdit .active').length
+
+    let contentText = e.target.parentElement.children[2].textContent
+    e.target.parentElement.children[0].innerHTML = `<input type="text" required value="${contentH3}">`
+    e.target.parentElement.children[2].innerHTML = `<textarea required value="${contentText}">${contentText}</textarea>`
+
+    const originalVals = { contentH3, stars, contentText }
+    return originalVals
+}
+
 
 function minimize(e, originalVals) {
     const box = document.querySelector('.confirmBox')
@@ -2168,12 +2195,15 @@ function minimize(e, originalVals) {
             box.style.animation = 'shrink .25s ease-out'
             setTimeout(function () { box.remove() }, 250)
         }, 0)
-    return inputToText(e, originalVals)
+    inputToText(e, originalVals)
+    $('.rating').rating()
+    $('.rating').rating('disable')
 }
 
-function inputToText(e, { contentH3, contentRating, contentText }) {
+function inputToText(e, { contentH3, stars, contentText }) {
     e.target.parentElement.parentElement.children[0].innerHTML = contentH3
-    e.target.parentElement.parentElement.children[1].innerHTML = contentRating
+    e.target.parentElement.parentElement.children[1].innerHTML = ''
+    e.target.parentElement.parentElement.children[1].setAttribute('data-rating', stars)
     e.target.parentElement.parentElement.children[2].innerHTML = contentText
 }
 
@@ -2195,17 +2225,7 @@ function update(e) {
 }
 
 
-function textToInput(e) {
-    let contentH3 = e.target.parentElement.children[0].textContent
-    const stars = 5 - document.querySelectorAll('.modal .outline').length
-    console.log(stars)
-    let contentText = e.target.parentElement.children[2].textContent
-    e.target.parentElement.children[0].innerHTML = `<input type="text" required value="${contentH3}">`
-    e.target.parentElement.children[2].innerHTML = `<textarea required value="${contentText}">${contentText}</textarea>`
-    textToStars(e,stars)
-    const originalVals = { contentH3, stars, contentText }
-    return originalVals
-}
+
 
 function inputConfirmed() {
     const input = document.querySelectorAll('input')
@@ -2222,7 +2242,7 @@ function accumulateVals() {
     result.user_id = document.querySelector('body').getAttribute('data-id')
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelectorAll('#rating .stars').length
+    result.rating = document.querySelectorAll('#rating .active').length
     result.text = document.querySelector('textarea').value
     return result
 }

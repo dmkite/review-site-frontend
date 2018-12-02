@@ -48,8 +48,9 @@ body > .grid {
 
 #snacks header{
     background-image:url('img/snacks.jpg');
-    background-size:100%;
+    background-size:cover;
     margin-bottom:20px;
+    background-repeat:no-repeat
 }
 
 #snacks header h2{
@@ -101,14 +102,14 @@ nav p:hover{
     padding-left:10px;
 }
 .review{
-    outline:1px solid blue;
+    /* outline:1px solid blue; */
     display:flex;
     flex-wrap:wrap;
     margin-bottom:10px;
 }
 
 .profPic{
-    outline:1px dotted red;
+    /* outline:1px dotted red; */
     height:30px;
     width:30px;
     border-radius:50%;
@@ -122,19 +123,33 @@ nav p:hover{
     color:white;
     opacity:.9;
 }
+
 .reviewContent{
-    outline:1px dashed green;
-    padding-left:10px;
+    /* outline:1px dashed green; */
+    padding:0 0 10px 10px;
     width:calc(100% - 30px);
+    border-bottom:1px solid #ddd;
     
 }
 .reviewContent h3{
     height:30px;
-    outline:1px solid purple;
+    /* outline:1px solid purple; */
     line-height: 30px;
+    margin-bottom:0;
+}
+.rating{
+    /* outline: 2px dashed orange; */
+    margin-top:0;
 }
 
 /* olive = # A9D92C*/
+.trash, .edit{
+    float:right;
+    padding-right:20px;
+}
+.trash{
+    padding-right:30px;
+}
 
 .trash:hover, .edit:hover{
     cursor:pointer;
@@ -192,4 +207,25 @@ aside{
 
 .avg{
     float:right;
+}
+
+.image img{
+    /* outline:3px solid green; */
+    padding:10px;
+
+    max-height:300px;
+}
+
+
+.container{
+    /* outline:2px dotted red; */
+}
+
+.vertical.animated.button{
+    margin-left:10px;
+}
+
+#snacks .fluid.card div.image{
+    background-size:cover;
+    background-repeat: no-repeat;
 }

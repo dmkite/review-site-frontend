@@ -12,7 +12,24 @@ function editReview(e) {
     const originalVals = textToInput(e)
     e.target.parentElement.innerHTML += confirmHTML('deny', 'positive', 'cancel', 'update')
     addButtonListeners(function (e) { minimize(e, originalVals) }, function (e) { update(e) })
+    $('.currentEdit').rating('enable')
+    document.querySelector('.currentEdit').classList.remove('currentEdit')
 }
+
+
+function textToInput(e) {
+    let contentH3 = e.target.parentElement.children[0].textContent
+    e.target.parentElement.children[1].classList.add('currentEdit')
+    const stars = document.querySelectorAll('.currentEdit .active').length
+
+    let contentText = e.target.parentElement.children[2].textContent
+    e.target.parentElement.children[0].innerHTML = `<input type="text" required value="${contentH3}">`
+    e.target.parentElement.children[2].innerHTML = `<textarea required value="${contentText}">${contentText}</textarea>`
+
+    const originalVals = { contentH3, stars, contentText }
+    return originalVals
+}
+
 
 function minimize(e, originalVals) {
     const box = document.querySelector('.confirmBox')
@@ -21,12 +38,15 @@ function minimize(e, originalVals) {
             box.style.animation = 'shrink .25s ease-out'
             setTimeout(function () { box.remove() }, 250)
         }, 0)
-    return inputToText(e, originalVals)
+    inputToText(e, originalVals)
+    $('.rating').rating()
+    $('.rating').rating('disable')
 }
 
-function inputToText(e, { contentH3, contentRating, contentText }) {
+function inputToText(e, { contentH3, stars, contentText }) {
     e.target.parentElement.parentElement.children[0].innerHTML = contentH3
-    e.target.parentElement.parentElement.children[1].innerHTML = contentRating
+    e.target.parentElement.parentElement.children[1].innerHTML = ''
+    e.target.parentElement.parentElement.children[1].setAttribute('data-rating', stars)
     e.target.parentElement.parentElement.children[2].innerHTML = contentText
 }
 
@@ -48,17 +68,7 @@ function update(e) {
 }
 
 
-function textToInput(e) {
-    let contentH3 = e.target.parentElement.children[0].textContent
-    const stars = 5 - document.querySelectorAll('.modal .outline').length
-    console.log(stars)
-    let contentText = e.target.parentElement.children[2].textContent
-    e.target.parentElement.children[0].innerHTML = `<input type="text" required value="${contentH3}">`
-    e.target.parentElement.children[2].innerHTML = `<textarea required value="${contentText}">${contentText}</textarea>`
-    textToStars(e,stars)
-    const originalVals = { contentH3, stars, contentText }
-    return originalVals
-}
+
 
 function inputConfirmed() {
     const input = document.querySelectorAll('input')
@@ -75,7 +85,7 @@ function accumulateVals() {
     result.user_id = document.querySelector('body').getAttribute('data-id')
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelectorAll('#rating .stars').length
+    result.rating = document.querySelectorAll('#rating .active').length
     result.text = document.querySelector('textarea').value
     return result
 }

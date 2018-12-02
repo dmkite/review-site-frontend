@@ -3,7 +3,7 @@ function confirmHTML(type1, type2, text1, text2) {
     if(box.length > 0) return ''
     return `
     <div class="confirmBox" >
-        Are you sure about that?
+        <p>Are you sure about that?</p>
         <div id="button1" class="ui ${type1} button">${text1}</div>
         <div id="button2" class="ui ${type2} button">${text2}</div>
     </div >`
@@ -24,8 +24,13 @@ function reviewTemplate() {
     </div>`
 }
 
+function calcHref(name){
+    name = name.split('').join('+')
+    return `https://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=` + name
+}
+
 function modalHTML(card) {
-    
+    const href= calcHref(card.name)
     return `
    <div class="ui modal" data-id="${card.id}" >
         <i class="close icon"></i>
@@ -33,18 +38,18 @@ function modalHTML(card) {
         <div class="container">
         <main>
             <div class="image content">
-                <div class="ui medium image">
+                <div class="ui">
                     <img src="${card.img}" alt="Image of ${card.name}">
                 </div>
                 <div class="description">
                     <p>${card.description}</p>
                     
-                    <div class="ui vertical animated button" tabindex="0">
+                    <a href="${href}" target="_blank"><div class="ui vertical animated button" tabindex="0">
                         <div class="visible content">$${card.price}</div>
                         <div class="hidden content">
                             <i class="shop icon"></i>
                         </div>
-                    </div>
+                    </div></a>
 
                 </div>
             </div>
@@ -71,7 +76,7 @@ function customizeReview(review) {
     const userId = document.querySelector('body').getAttribute('data-id')
     if (review.user_id == userId) deleteEdit = '<i class="edit icon"></i> <i class="trash alternate icon"></i>'
     let img = review.img
-    if (!review.img) img = `<p>${review.first_name[0]}</p>`
+    if (!review.img) img = `<p>${review.first_name[0].toUpperCase()}</p>`
     return { deleteEdit, img }
 }
 
@@ -132,7 +137,6 @@ function snackTemplate(snack) {
                 ${avg}
             </span>
         </div>
-
     </div>`
 }
 
