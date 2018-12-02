@@ -4,6 +4,7 @@ const reviews = require('./reviews')
 const {snackTemplate} = require('./templates')
 
 function init(){
+    document.querySelector('#signout').addEventListener('click', signout)
     const token = localStorage.getItem('token')
     if(!token) return window.location.pathname = '/'
     
@@ -20,6 +21,11 @@ function init(){
         localStorage.removeItem('token')
         window.location.pathname = '/'
     })
+}
+
+function signout(){
+    localStorage.removeItem('token')
+    window.location.pathname = '/'
 }
 
 function customGreet(user){
