@@ -110,6 +110,8 @@ function snackTemplate(snack) {
     let reviews = '0 reviews'
     if (snack.reviews == 1) reviews = `${snack.reviews} review`
     else if (snack.reviews > 1) reviews = `${snack.reviews} reviews`
+    let avg = 'No ratings'
+    if (!!Number(snack.avg)) avg = Number(snack.avg).toFixed(1)
 
     return `
     <div class="${colorClass || ''} fluid card" data-id="${snack.id}">
@@ -124,6 +126,10 @@ function snackTemplate(snack) {
             <span>
                 <i class="comments outline icon"></i>
                 ${reviews}
+            </span>
+            <span class="avg">
+                <i class="star outline icon"></i>
+                ${avg}
             </span>
         </div>
 

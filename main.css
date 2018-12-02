@@ -189,3 +189,7 @@ aside{
 .hidden{
     visibility:hidden;
 }
+
+.avg{
+    float:right;
+}

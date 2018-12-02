@@ -53,7 +53,10 @@ function displaySnacks(){
 function addReviewCt(index){
     return axios.get(baseURL + `/reviews/count`)
     .then(result => {
-        result.data.data.forEach(snack => index[snack.snack_id].reviews = snack.count)
+        result.data.data.forEach(snack => {
+            index[snack.snack_id].reviews = snack.count
+            index[snack.snack_id].avg = snack.avg
+        })
         return index
     })
     .catch(err => console.log(err))
