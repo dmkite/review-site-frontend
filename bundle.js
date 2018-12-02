@@ -1655,15 +1655,14 @@ const {reviewTemplate, reviewHTML} = require('./templates')
 function init(){
     const edit = document.querySelectorAll('.edit')
     let createBtn = document.querySelector('#create')
-    // createBtn.onclick = null
     createBtn.addEventListener('click', reviewSetup)
 }
 
 function reviewSetup(){
     document.querySelector('#create').classList.add('disabled')
     document.querySelector('.commentsContainer').innerHTML += reviewTemplate()
-    $('.rating').rating();
-    $('.toggle .rating').rating({initialRating: 2, maxRating: 5});
+    
+    $('.newReview .rating').rating({ maxRating: 5 });
     document.querySelector('#submit').addEventListener('click', function(e){submitReview(e)})
 }
 
@@ -1680,6 +1679,7 @@ function submitReview(e){
     .then(result => {
         e.target.parentElement.parentElement.setAttribute('data-id', result.data.data[0].id)
         getReviews(document.querySelector('.modal').getAttribute('data-id'))
+        
     })
     .catch(err => console.error(err))
 }
@@ -1692,6 +1692,7 @@ function getReviews(id) {
                 result.data.forEach(review => reviewArray.push(reviewHTML(review)))
                 document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
             }
+            $('.ui.rating').rating('disable');  
         })
 }
 
@@ -1713,6 +1714,7 @@ function getStarRating() {
     }
     return rating
 }
+
 
 module.exports = {init}
 },{"./templates":35,"axios":2}],30:[function(require,module,exports){
@@ -1841,10 +1843,10 @@ function remove(e){
     setTimeout(
         function(){
             modal.remove()
-            init()
+            location.reload()
         },250)
 }
-
+//Below can be used for averages as well
 function getReviews(id){
     return axios.get(baseURL + `/api/snacks/${id}/reviews`)
     .then(result => {
@@ -1854,6 +1856,7 @@ function getReviews(id){
             document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
         }
         initPath()
+        $('.rating').rating('disable');  
     })
 }
 
@@ -1861,9 +1864,12 @@ function getReviews(id){
 
 module.exports = {init, getReviews}
 },{"./create":29,"./delete":30,"./templates":35,"./update":36,"axios":2}],33:[function(require,module,exports){
+const axios = require('axios')
+const baseURL = 'http://localhost:3000'
+const {alert} = require('./utils')
 function init(){
     console.log('x')
-    document.addEventListener('keydown', activateBtn)
+    document.addEventListener('keyup', activateBtn)
 }
 
 function checkInputs(){
@@ -1881,29 +1887,38 @@ function checkInputs(){
 function activateBtn(){
     checkPasswords()
     let result = checkInputs()
-    console.log(result)
     if(!result) return false
     document.querySelector('#submit').classList.remove('disabled') 
     document.querySelector('#signup').addEventListener('submit', function(e){submit(e, result)})
 }
 
-function submit(e, result){
-    e.preventDefault()
-    console.log('yup')
-}
-
 function checkPasswords(){
     const retypePassword = document.querySelector('#retypePassword')
-    const password = document.querySelector('#password')
-    retypePassword.onfocus = function(){
-        while(retypePassword.value !== password.value)
-        document.querySelector('.passwordWarning').classList.remove('hidden')
+    retypePassword.addEventListener('keyup', isEqual)
     }
+
+function isEqual(){
+    const retypePassword = document.querySelector('#retypePassword').value
+    const password = document.querySelector('#password').value
+    if(retypePassword !== password) document.querySelector('.passwordWarning').classList.remove('hidden')
+    else document.querySelector('.passwordWarning').classList.add('hidden')
 }
+
+function submit(e, result) {
+    e.preventDefault()
+    return axios.post(baseURL+'/users', result)
+    .then( () => {
+        return window.location.pathname = '/'
+    })
+    .catch(err => {
+        console.error(err)
+        alert('danger', err)
+    })
+}
+
+
 module.exports = {init}
-
-
-},{}],34:[function(require,module,exports){
+},{"./utils":37,"axios":2}],34:[function(require,module,exports){
 const axios = require('axios') 
 const baseURL = 'http://localhost:3000'
 const reviews = require('./reviews')
@@ -1955,6 +1970,7 @@ function displaySnacks(){
     })
 
 }
+
 function addReviewCt(index){
     return axios.get(baseURL + `/reviews/count`)
     .then(result => {
@@ -1984,7 +2000,7 @@ function HTMLify(obj){
 
 
 
-module.exports = {init}
+module.exports = {init, displaySnacks}
 },{"./reviews":32,"./templates":35,"axios":2}],35:[function(require,module,exports){
 function confirmHTML(type1, type2, text1, text2) {
     let box = document.querySelectorAll('.confirmBox')
@@ -2013,6 +2029,7 @@ function reviewTemplate() {
 }
 
 function modalHTML(card) {
+    
     return `
    <div class="ui modal" data-id="${card.id}" >
         <i class="close icon"></i>
@@ -2064,6 +2081,8 @@ function customizeReview(review) {
 
 function reviewHTML(review) {
     const { deleteEdit, img } = customizeReview(review)
+    const stars = createStars(review.rating)
+    console.log(review.rating)
     return `
     
     <div class="review" data-id="${review.id}">
@@ -2071,11 +2090,22 @@ function reviewHTML(review) {
 
         <div class="reviewContent">
             <h3>${review.title}</h3>
-            <p>${review.rating}</p>
+            <div class="ui rating" data-rating="${review.rating}" data-max-rating="5"></div>
             <p>${review.text}</p>
             ${deleteEdit}
         </div>
     </div>`
+}
+
+function createStars(num){
+    const stars = []
+    for (let i = 0; i < num; i++) {
+        stars.push('<i class="star icon"></i>')
+    }
+    while (stars.length < 5) {
+        stars.push('<i class="star outline icon"></i>')
+    }
+    return stars.join('')
 }
 
 function snackTemplate(snack) {
@@ -2158,12 +2188,13 @@ function update(e) {
 
 function textToInput(e) {
     let contentH3 = e.target.parentElement.children[0].textContent
-    let contentRating = e.target.parentElement.children[1].textContent
+    const stars = 5 - document.querySelectorAll('.modal .outline').length
+    console.log(stars)
     let contentText = e.target.parentElement.children[2].textContent
     e.target.parentElement.children[0].innerHTML = `<input type="text" required value="${contentH3}">`
-    e.target.parentElement.children[1].innerHTML = `<input type="text" required value="${contentRating}">`
     e.target.parentElement.children[2].innerHTML = `<textarea required value="${contentText}">${contentText}</textarea>`
-    const originalVals = { contentH3, contentRating, contentText }
+    textToStars(e,stars)
+    const originalVals = { contentH3, stars, contentText }
     return originalVals
 }
 
@@ -2171,7 +2202,7 @@ function inputConfirmed() {
     const input = document.querySelectorAll('input')
     const textarea = document.querySelector('textarea')
     input[0].parentElement.innerHTML = input[0].value
-    input[1].parentElement.innerHTML = input[1].value
+    input[1].parentElement.innerHTML = input[1].value 
     textarea.parentElement.innerHTML = textarea.value
     return
 }
@@ -2182,7 +2213,7 @@ function accumulateVals() {
     result.user_id = document.querySelector('body').getAttribute('data-id')
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelectorAll('input')[1].value
+    result.rating = document.querySelectorAll('#rating .stars').length
     result.text = document.querySelector('textarea').value
     return result
 }

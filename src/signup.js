@@ -1,6 +1,9 @@
+const axios = require('axios')
+const baseURL = 'http://localhost:3000'
+const {alert} = require('./utils')
 function init(){
     console.log('x')
-    document.addEventListener('keydown', activateBtn)
+    document.addEventListener('keyup', activateBtn)
 }
 
 function checkInputs(){
@@ -18,24 +21,34 @@ function checkInputs(){
 function activateBtn(){
     checkPasswords()
     let result = checkInputs()
-    console.log(result)
     if(!result) return false
     document.querySelector('#submit').classList.remove('disabled') 
     document.querySelector('#signup').addEventListener('submit', function(e){submit(e, result)})
 }
 
-function submit(e, result){
-    e.preventDefault()
-    console.log('yup')
-}
-
 function checkPasswords(){
     const retypePassword = document.querySelector('#retypePassword')
-    const password = document.querySelector('#password')
-    retypePassword.onfocus = function(){
-        while(retypePassword.value !== password.value)
-        document.querySelector('.passwordWarning').classList.remove('hidden')
+    retypePassword.addEventListener('keyup', isEqual)
     }
-}
-module.exports = {init}
 
+function isEqual(){
+    const retypePassword = document.querySelector('#retypePassword').value
+    const password = document.querySelector('#password').value
+    if(retypePassword !== password) document.querySelector('.passwordWarning').classList.remove('hidden')
+    else document.querySelector('.passwordWarning').classList.add('hidden')
+}
+
+function submit(e, result) {
+    e.preventDefault()
+    return axios.post(baseURL+'/users', result)
+    .then( () => {
+        return window.location.pathname = '/'
+    })
+    .catch(err => {
+        console.error(err)
+        alert('danger', err)
+    })
+}
+
+
+module.exports = {init}

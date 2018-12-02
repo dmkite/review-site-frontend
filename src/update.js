@@ -50,12 +50,13 @@ function update(e) {
 
 function textToInput(e) {
     let contentH3 = e.target.parentElement.children[0].textContent
-    let contentRating = e.target.parentElement.children[1].textContent
+    const stars = 5 - document.querySelectorAll('.modal .outline').length
+    console.log(stars)
     let contentText = e.target.parentElement.children[2].textContent
     e.target.parentElement.children[0].innerHTML = `<input type="text" required value="${contentH3}">`
-    e.target.parentElement.children[1].innerHTML = `<input type="text" required value="${contentRating}">`
     e.target.parentElement.children[2].innerHTML = `<textarea required value="${contentText}">${contentText}</textarea>`
-    const originalVals = { contentH3, contentRating, contentText }
+    textToStars(e,stars)
+    const originalVals = { contentH3, stars, contentText }
     return originalVals
 }
 
@@ -63,7 +64,7 @@ function inputConfirmed() {
     const input = document.querySelectorAll('input')
     const textarea = document.querySelector('textarea')
     input[0].parentElement.innerHTML = input[0].value
-    input[1].parentElement.innerHTML = input[1].value
+    input[1].parentElement.innerHTML = input[1].value 
     textarea.parentElement.innerHTML = textarea.value
     return
 }
@@ -74,7 +75,7 @@ function accumulateVals() {
     result.user_id = document.querySelector('body').getAttribute('data-id')
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelectorAll('input')[1].value
+    result.rating = document.querySelectorAll('#rating .stars').length
     result.text = document.querySelector('textarea').value
     return result
 }

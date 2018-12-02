@@ -43,10 +43,10 @@ function remove(e){
     setTimeout(
         function(){
             modal.remove()
-            init()
+            location.reload()
         },250)
 }
-
+//Below can be used for averages as well
 function getReviews(id){
     return axios.get(baseURL + `/api/snacks/${id}/reviews`)
     .then(result => {
@@ -56,6 +56,7 @@ function getReviews(id){
             document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
         }
         initPath()
+        $('.rating').rating('disable');  
     })
 }
 

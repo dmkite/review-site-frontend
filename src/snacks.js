@@ -49,6 +49,7 @@ function displaySnacks(){
     })
 
 }
+
 function addReviewCt(index){
     return axios.get(baseURL + `/reviews/count`)
     .then(result => {
@@ -78,4 +79,4 @@ function HTMLify(obj){
 
 
 
-module.exports = {init}
+module.exports = {init, displaySnacks}

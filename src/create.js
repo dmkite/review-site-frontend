@@ -6,15 +6,14 @@ const {reviewTemplate, reviewHTML} = require('./templates')
 function init(){
     const edit = document.querySelectorAll('.edit')
     let createBtn = document.querySelector('#create')
-    // createBtn.onclick = null
     createBtn.addEventListener('click', reviewSetup)
 }
 
 function reviewSetup(){
     document.querySelector('#create').classList.add('disabled')
     document.querySelector('.commentsContainer').innerHTML += reviewTemplate()
-    $('.rating').rating();
-    $('.toggle .rating').rating({initialRating: 2, maxRating: 5});
+    
+    $('.newReview .rating').rating({ maxRating: 5 });
     document.querySelector('#submit').addEventListener('click', function(e){submitReview(e)})
 }
 
@@ -31,6 +30,7 @@ function submitReview(e){
     .then(result => {
         e.target.parentElement.parentElement.setAttribute('data-id', result.data.data[0].id)
         getReviews(document.querySelector('.modal').getAttribute('data-id'))
+        
     })
     .catch(err => console.error(err))
 }
@@ -43,6 +43,7 @@ function getReviews(id) {
                 result.data.forEach(review => reviewArray.push(reviewHTML(review)))
                 document.querySelector('.commentsContainer').innerHTML = reviewArray.join('')
             }
+            $('.ui.rating').rating('disable');  
         })
 }
 
@@ -64,5 +65,6 @@ function getStarRating() {
     }
     return rating
 }
+
 
 module.exports = {init}

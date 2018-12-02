@@ -25,6 +25,7 @@ function reviewTemplate() {
 }
 
 function modalHTML(card) {
+    
     return `
    <div class="ui modal" data-id="${card.id}" >
         <i class="close icon"></i>
@@ -76,6 +77,8 @@ function customizeReview(review) {
 
 function reviewHTML(review) {
     const { deleteEdit, img } = customizeReview(review)
+    const stars = createStars(review.rating)
+    console.log(review.rating)
     return `
     
     <div class="review" data-id="${review.id}">
@@ -83,11 +86,22 @@ function reviewHTML(review) {
 
         <div class="reviewContent">
             <h3>${review.title}</h3>
-            <p>${review.rating}</p>
+            <div class="ui rating" data-rating="${review.rating}" data-max-rating="5"></div>
             <p>${review.text}</p>
             ${deleteEdit}
         </div>
     </div>`
+}
+
+function createStars(num){
+    const stars = []
+    for (let i = 0; i < num; i++) {
+        stars.push('<i class="star icon"></i>')
+    }
+    while (stars.length < 5) {
+        stars.push('<i class="star outline icon"></i>')
+    }
+    return stars.join('')
 }
 
 function snackTemplate(snack) {
