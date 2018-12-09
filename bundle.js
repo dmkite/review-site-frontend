@@ -1813,7 +1813,6 @@ const del = require('./delete')
 const create = require('./create')
 const update = require('./update')
 const {modalHTML, reviewHTML} = require('./templates')
-const snacks = require('./snacks')
 
 function init(){
     const cards = document.querySelectorAll('.card')
@@ -1822,7 +1821,6 @@ function init(){
     }
 }
 
-
 function modal(e){
     e.stopPropagation()
     const id = e.currentTarget.getAttribute('data-id')
@@ -1830,10 +1828,12 @@ function modal(e){
     .then(result => {
         document.querySelector('body').innerHTML += modalHTML(result.data[0])
         $('.ui.modal').modal('show');
-        document.querySelector('.close').onclick = function(e){remove}
-        document.querySelector('.modals').onclick = function(e){remove}
         getReviews(id)
         document.querySelector('.modal').onclick = initPath
+    })
+    .then( () => {
+        document.querySelector('.close').onclick = function (e) { remove }
+        document.querySelector('.modals').onclick = function (e) { remove }
     })
 }
 
@@ -1876,7 +1876,7 @@ function getReviews(id){
 
 
 module.exports = {init, getReviews}
-},{"./create":29,"./delete":30,"./snacks":34,"./templates":35,"./update":36,"axios":2}],33:[function(require,module,exports){
+},{"./create":29,"./delete":30,"./templates":35,"./update":36,"axios":2}],33:[function(require,module,exports){
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
 const {alert} = require('./utils')
@@ -2258,7 +2258,6 @@ function accumulateVals() {
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
     result.rating = getRating()
-    console.log(result.rating)
     result.text = document.querySelector('textarea').value
     return result
 }

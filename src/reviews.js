@@ -4,7 +4,6 @@ const del = require('./delete')
 const create = require('./create')
 const update = require('./update')
 const {modalHTML, reviewHTML} = require('./templates')
-const snacks = require('./snacks')
 
 function init(){
     const cards = document.querySelectorAll('.card')
@@ -13,7 +12,6 @@ function init(){
     }
 }
 
-
 function modal(e){
     e.stopPropagation()
     const id = e.currentTarget.getAttribute('data-id')
@@ -21,10 +19,12 @@ function modal(e){
     .then(result => {
         document.querySelector('body').innerHTML += modalHTML(result.data[0])
         $('.ui.modal').modal('show');
-        document.querySelector('.close').onclick = function(e){remove}
-        document.querySelector('.modals').onclick = function(e){remove}
         getReviews(id)
         document.querySelector('.modal').onclick = initPath
+    })
+    .then( () => {
+        document.querySelector('.close').onclick = function (e) { remove }
+        document.querySelector('.modals').onclick = function (e) { remove }
     })
 }
 

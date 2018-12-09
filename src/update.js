@@ -91,7 +91,6 @@ function accumulateVals() {
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
     result.rating = getRating()
-    console.log(result.rating)
     result.text = document.querySelector('textarea').value
     return result
 }
