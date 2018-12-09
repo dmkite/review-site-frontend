@@ -1,7 +1,10 @@
 #index {
     /* background-color: #DADADA; */
-    background-image: url('img/hero.jpg')
+    background-image: url('img/hero.jpg');
+    background-repeat:no-repeat;
+    background-size:cover;
 }
+
 body > .grid {
     height: 100%;
 }
@@ -221,7 +224,7 @@ aside{
     /* outline:2px dotted red; */
 }
 
-.vertical.animated.button{
+.modal .button{
     margin-left:10px;
 }
 
@@ -229,3 +232,29 @@ aside{
     background-size:cover;
     background-repeat: no-repeat;
 }
+
+textarea{
+    width:100%;
+    resize:none
+}
+.modal input{width:100%;}
+
+/******************************************************************************
+Media Queries
+******************************************************************************/
+@media screen and (min-width: 1024px){
+    #snacks header{height:375px; background-position-y: 45%;}
+}
+
+@media screen and (max-width: 550px){
+    #snacks .card{width:40%;}
+    #cardHolder{ outline: 1px solid red; display: flex; justify-content:space-around;}
+    .container{
+    display:block;
+    background-color:red;
+}
+    .modal main, .modal aside{width: 100%;}
+
+}
+
+

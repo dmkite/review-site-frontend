@@ -14,9 +14,16 @@ function editReview(e) {
     addButtonListeners(function (e) { minimize(e, originalVals) }, function (e) { update(e) })
     $('.currentEdit').rating('enable')
     document.querySelector('.currentEdit').classList.remove('currentEdit')
+    document.addEventListener('change', disableIfEmpty)
 }
 
-
+function disableIfEmpty(){
+    inputs = document.querySelectorAll('input')
+    for (let input of inputs){
+        if (input.value === '') return document.querySelector('#button2').classList.add('disabled')
+    }
+    return document.querySelector('#button2').classList.remove('disabled')
+}
 function textToInput(e) {
     let contentH3 = e.target.parentElement.children[0].textContent
     e.target.parentElement.children[1].classList.add('currentEdit')
@@ -51,6 +58,7 @@ function inputToText(e, { contentH3, stars, contentText }) {
 }
 
 function update(e) {
+    
     let { id, user_id, snack_id, title, rating, text } = accumulateVals()
     const token = localStorage.getItem('token')
     if (!token) return window.location.pathname = '/'
@@ -67,27 +75,34 @@ function update(e) {
         .catch(err => console.log(err))
 }
 
-
-
-
 function inputConfirmed() {
     const input = document.querySelectorAll('input')
     const textarea = document.querySelector('textarea')
     input[0].parentElement.innerHTML = input[0].value
-    input[1].parentElement.innerHTML = input[1].value 
     textarea.parentElement.innerHTML = textarea.value
-    return
+    return 
 }
+
 
 function accumulateVals() {
     result = {}
-    result.id = document.querySelector('.positive').parentElement.parentElement.getAttribute('data-id')
+    result.id = document.querySelector('.positive').parentElement.parentElement.parentElement.getAttribute('data-id')
     result.user_id = document.querySelector('body').getAttribute('data-id')
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelectorAll('#rating .active').length
+    result.rating = getRating()
+    console.log(result.rating)
     result.text = document.querySelector('textarea').value
     return result
+}
+
+function getRating(){
+    const starIcons = document.querySelector('textarea').parentElement.previousElementSibling.children
+    let stars = 0
+    for(icon of starIcons){
+        if(icon.classList.contains('active')) stars++
+    }
+    return stars
 }
 
 module.exports = {init}

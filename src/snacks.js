@@ -34,6 +34,7 @@ function customGreet(user){
 }
 
 function displaySnacks(){
+    console.log('firing display snacks')
     const id = document.querySelector('body').getAttribute('data-id')
     axios.get(baseURL+'/api/snacks')
     .then(result => {

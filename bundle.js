@@ -1775,7 +1775,8 @@ const baseURL = 'http://localhost:3000'
 const {alert} = require('./utils')
 
 function init(){
-    const login = document.querySelector('#login')
+    const login = document.querySelector('#login') 
+    document.addEventListener('keyup', checkIfEmpty)
 
     login.addEventListener('submit', function(e){
         const email = document.querySelector('#email').value
@@ -1784,6 +1785,13 @@ function init(){
     })
 }
 
+function checkIfEmpty(){
+    const inputs = document.querySelectorAll('input')
+    for(let input of inputs){
+        if(input.value === '') return document.querySelector('.submit').classList.add('disabled')
+    }
+    document.querySelector('.submit').classList.remove('disabled')
+}
 function tryLogin(e, email, password){
     e.preventDefault()
     return axios.post(baseURL+'/auth/login', {email, password})
@@ -1792,7 +1800,8 @@ function tryLogin(e, email, password){
         window.location.pathname = '/snacks.html'
     })
     .catch(err => {
-        alert('danger', err)
+        if(err.message[err.message.length - 1] == 1) return document.querySelector('#passwordWarning').classList.remove('hidden')
+        document.querySelector('#emailWarning').classList.remove('hidden')
     })
 }
 
@@ -1804,13 +1813,15 @@ const del = require('./delete')
 const create = require('./create')
 const update = require('./update')
 const {modalHTML, reviewHTML} = require('./templates')
+const snacks = require('./snacks')
 
 function init(){
     const cards = document.querySelectorAll('.card')
     for(let card of cards){
-        card.addEventListener('click', function(e){modal(e)})
+        card.onclick =  function(e){modal(e)}
     }
 }
+
 
 function modal(e){
     e.stopPropagation()
@@ -1818,10 +1829,9 @@ function modal(e){
     return axios.get(baseURL+`/api/snacks/${id}`)
     .then(result => {
         document.querySelector('body').innerHTML += modalHTML(result.data[0])
-        $('.ui.modal')
-            .modal('show')
-            ;
-        document.querySelector('.close').addEventListener('click', remove)
+        $('.ui.modal').modal('show');
+        document.querySelector('.close').onclick = function(e){remove}
+        document.querySelector('.modals').onclick = function(e){remove}
         getReviews(id)
         document.querySelector('.modal').onclick = initPath
     })
@@ -1837,16 +1847,19 @@ function initPath(){
     }
     else create.init()
 }
+////////Issue: open modal, click dark screen or x, should delete modal and addlisteners to cards, but it doesn't
 
 function remove(e){
+    if (!e.target.classList.contains('modals') || !e.currentTarget.classList.contains('close')) return false
     const modal = document.querySelector('.modal')
     setTimeout(
         function(){
             modal.remove()
-            location.reload()
+            document.querySelector('.ui.dimmer.modals').innerHTML = ''
+            init()
         },250)
 }
-//Below can be used for averages as well
+
 function getReviews(id){
     return axios.get(baseURL + `/api/snacks/${id}/reviews`)
     .then(result => {
@@ -1863,7 +1876,7 @@ function getReviews(id){
 
 
 module.exports = {init, getReviews}
-},{"./create":29,"./delete":30,"./templates":35,"./update":36,"axios":2}],33:[function(require,module,exports){
+},{"./create":29,"./delete":30,"./snacks":34,"./templates":35,"./update":36,"axios":2}],33:[function(require,module,exports){
 const axios = require('axios')
 const baseURL = 'http://localhost:3000'
 const {alert} = require('./utils')
@@ -1955,6 +1968,7 @@ function customGreet(user){
 }
 
 function displaySnacks(){
+    console.log('firing display snacks')
     const id = document.querySelector('body').getAttribute('data-id')
     axios.get(baseURL+'/api/snacks')
     .then(result => {
@@ -2057,11 +2071,8 @@ function modalHTML(card) {
                 <div class="description">
                     <p>${card.description}</p>
                     
-                    <a href="${href}" target="_blank"><div class="ui vertical animated button" tabindex="0">
+                    <a href="${href}" target="_blank"><div class="ui button" tabindex="0">
                         <div class="visible content">$${card.price}</div>
-                        <div class="hidden content">
-                            <i class="shop icon"></i>
-                        </div>
                     </div></a>
 
                 </div>
@@ -2096,7 +2107,6 @@ function customizeReview(review) {
 function reviewHTML(review) {
     const { deleteEdit, img } = customizeReview(review)
     const stars = createStars(review.rating)
-    console.log(review.rating)
     return `
     
     <div class="review" data-id="${review.id}">
@@ -2171,9 +2181,16 @@ function editReview(e) {
     addButtonListeners(function (e) { minimize(e, originalVals) }, function (e) { update(e) })
     $('.currentEdit').rating('enable')
     document.querySelector('.currentEdit').classList.remove('currentEdit')
+    document.addEventListener('change', disableIfEmpty)
 }
 
-
+function disableIfEmpty(){
+    inputs = document.querySelectorAll('input')
+    for (let input of inputs){
+        if (input.value === '') return document.querySelector('#button2').classList.add('disabled')
+    }
+    return document.querySelector('#button2').classList.remove('disabled')
+}
 function textToInput(e) {
     let contentH3 = e.target.parentElement.children[0].textContent
     e.target.parentElement.children[1].classList.add('currentEdit')
@@ -2208,6 +2225,7 @@ function inputToText(e, { contentH3, stars, contentText }) {
 }
 
 function update(e) {
+    
     let { id, user_id, snack_id, title, rating, text } = accumulateVals()
     const token = localStorage.getItem('token')
     if (!token) return window.location.pathname = '/'
@@ -2224,27 +2242,34 @@ function update(e) {
         .catch(err => console.log(err))
 }
 
-
-
-
 function inputConfirmed() {
     const input = document.querySelectorAll('input')
     const textarea = document.querySelector('textarea')
     input[0].parentElement.innerHTML = input[0].value
-    input[1].parentElement.innerHTML = input[1].value 
     textarea.parentElement.innerHTML = textarea.value
-    return
+    return 
 }
+
 
 function accumulateVals() {
     result = {}
-    result.id = document.querySelector('.positive').parentElement.parentElement.getAttribute('data-id')
+    result.id = document.querySelector('.positive').parentElement.parentElement.parentElement.getAttribute('data-id')
     result.user_id = document.querySelector('body').getAttribute('data-id')
     result.snack_id = document.querySelector('.modal').getAttribute('data-id')
     result.title = document.querySelectorAll('input')[0].value
-    result.rating = document.querySelectorAll('#rating .active').length
+    result.rating = getRating()
+    console.log(result.rating)
     result.text = document.querySelector('textarea').value
     return result
+}
+
+function getRating(){
+    const starIcons = document.querySelector('textarea').parentElement.previousElementSibling.children
+    let stars = 0
+    for(icon of starIcons){
+        if(icon.classList.contains('active')) stars++
+    }
+    return stars
 }
 
 module.exports = {init}

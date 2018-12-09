@@ -44,11 +44,8 @@ function modalHTML(card) {
                 <div class="description">
                     <p>${card.description}</p>
                     
-                    <a href="${href}" target="_blank"><div class="ui vertical animated button" tabindex="0">
+                    <a href="${href}" target="_blank"><div class="ui button" tabindex="0">
                         <div class="visible content">$${card.price}</div>
-                        <div class="hidden content">
-                            <i class="shop icon"></i>
-                        </div>
                     </div></a>
 
                 </div>
@@ -83,7 +80,6 @@ function customizeReview(review) {
 function reviewHTML(review) {
     const { deleteEdit, img } = customizeReview(review)
     const stars = createStars(review.rating)
-    console.log(review.rating)
     return `
     
     <div class="review" data-id="${review.id}">

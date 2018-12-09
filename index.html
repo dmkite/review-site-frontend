@@ -29,14 +29,21 @@
                             <i class="user icon"></i>
                             <input id="email" type="email" name="email" placeholder="E-mail address">
                         </div>
+                            <div id="emailWarning" class="ui pointing red basic label hidden">
+                                Invalid email
+                            </div>
                     </div>
                     <div class="field">
                         <div class="ui left icon input">
                             <i class="lock icon"></i>
                             <input id="password" type="password" name="password" placeholder="Password">
                         </div>
+                        <div id="passwordWarning" class="ui pointing red basic label hidden">
+                            Invalid password
+                        </div>
+
                     </div>
-                    <button type="submit" class="ui fluid large teal submit button">Log in</button>
+                    <button type="submit" class="ui fluid large teal submit button disabled">Log in</button>
                 </div>
     
                 <div class="ui error message"></div>

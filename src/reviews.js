@@ -4,13 +4,15 @@ const del = require('./delete')
 const create = require('./create')
 const update = require('./update')
 const {modalHTML, reviewHTML} = require('./templates')
+const snacks = require('./snacks')
 
 function init(){
     const cards = document.querySelectorAll('.card')
     for(let card of cards){
-        card.addEventListener('click', function(e){modal(e)})
+        card.onclick =  function(e){modal(e)}
     }
 }
+
 
 function modal(e){
     e.stopPropagation()
@@ -18,10 +20,9 @@ function modal(e){
     return axios.get(baseURL+`/api/snacks/${id}`)
     .then(result => {
         document.querySelector('body').innerHTML += modalHTML(result.data[0])
-        $('.ui.modal')
-            .modal('show')
-            ;
-        document.querySelector('.close').addEventListener('click', remove)
+        $('.ui.modal').modal('show');
+        document.querySelector('.close').onclick = function(e){remove}
+        document.querySelector('.modals').onclick = function(e){remove}
         getReviews(id)
         document.querySelector('.modal').onclick = initPath
     })
@@ -37,16 +38,19 @@ function initPath(){
     }
     else create.init()
 }
+////////Issue: open modal, click dark screen or x, should delete modal and addlisteners to cards, but it doesn't
 
 function remove(e){
+    if (!e.target.classList.contains('modals') || !e.currentTarget.classList.contains('close')) return false
     const modal = document.querySelector('.modal')
     setTimeout(
         function(){
             modal.remove()
-            location.reload()
+            document.querySelector('.ui.dimmer.modals').innerHTML = ''
+            init()
         },250)
 }
-//Below can be used for averages as well
+
 function getReviews(id){
     return axios.get(baseURL + `/api/snacks/${id}/reviews`)
     .then(result => {
